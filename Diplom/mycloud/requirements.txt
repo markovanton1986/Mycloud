@@ -1,0 +1,32 @@
+# Django и основные библиотеки
+Django>=4.2,<5.0
+djangorestframework>=3.14,<4.0
+django-cors-headers>=3.14
+django-environ>=0.10
+
+# База данных
+psycopg2-binary>=2.9,<3.0
+
+# Валидация и безопасность
+bcrypt>=4.0
+python-decouple>=3.8
+djangorestframework-simplejwt>=5.3
+
+# Загрузка файлов
+django-storages>=1.13
+Pillow>=9.0
+
+# Логирование и отладка
+django-debug-toolbar>=3.9
+
+# Оптимизация и производительность
+gunicorn>=20.1
+whitenoise>=6.4
+
+# Асинхронность
+celery>=5.2
+django-celery-beat>=2.5
+
+# Дополнительные утилиты
+drf-yasg>=1.21
+django-filter>=23.0

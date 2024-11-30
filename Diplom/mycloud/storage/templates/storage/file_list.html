@@ -1,0 +1,27 @@
+<h1>Files for {{ user.username }}</h1>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Comment</th>
+        <th>Size</th>
+        <th>Upload Date</th>
+        <th>Last Download</th>
+        <th>Actions</th>
+    </tr>
+    {% for file in files %}
+    <tr>
+        <td>{{ file.name }}</td>
+        <td>{{ file.comment }}</td>
+        <td>{{ file.size }} bytes</td>
+        <td>{{ file.upload_date }}</td>
+        <td>{{ file.last_download_date|default:"Never" }}</td>
+        <td>
+            <a href="{{ file.file.url }}">View/Download</a> |
+            <a href="{% url 'rename_file' file.id %}">Rename</a> |
+            <a href="{% url 'delete_file' file.id %}">Delete</a> |
+            <button onclick="copyLink({{ file.id }})">Copy Link</button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="{% url 'upload_file' %}">Upload a new file</a>
