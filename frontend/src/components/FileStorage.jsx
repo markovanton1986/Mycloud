@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import LoadingFile from './LoadingFile';
+import './FileManager.css';
 
 function FileManager() {
     const [files, setFiles] = useState([]);
-    const [newFile, setNewFile] = useState(null);
-    const [comment, setComment] = useState('');
 
+    // Загружаем список файлов при монтировании компонента
     useEffect(() => {
         const fetchFiles = async () => {
             try {
@@ -24,27 +24,18 @@ function FileManager() {
         fetchFiles();
     }, []);
 
-    const handleUpload = async () => {
-        const formData = new FormData();
-        formData.append('file', newFile);
-        formData.append('comment', comment);
-
-        try {
-            await axios.post('/api/files/upload/', formData, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            alert('Файл успешно загружен!');
-        } catch (error) {
-            console.error('Ошибка загрузки файла:', error);
-        }
+    // Функция копирования ссылки в буфер обмена
+    const handleCopyLink = (url) => {
+        navigator.clipboard.writeText(url);
+        alert('Ссылка скопирована!');
     };
 
     return (
         <div>
-            <h1>Мои файлы</h1>
+            <h1>Файловый менеджер</h1>
+
+            {/* Список файлов */}
+            <h2>Список файлов</h2>
             <table>
                 <thead>
                     <tr>
@@ -55,41 +46,25 @@ function FileManager() {
                     </tr>
                 </thead>
                 <tbody>
-                    {files.map(file => (
+                    {files.map((file) => (
                         <tr key={file.id}>
                             <td>{file.name}</td>
                             <td>{file.comment}</td>
                             <td>{file.size}</td>
                             <td>
                                 <a href={file.url}>Скачать</a>
-                                <button onClick={() => {
-                                    navigator.clipboard.writeText(file.url);
-                                    alert('Ссылка скопирована!');
-                                }}>Скопировать ссылку</button>
+                                <button onClick={() => handleCopyLink(file.url)}>Скопировать ссылку</button>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
 
-            <h2>Загрузить файл</h2>
-            <input type="file" onChange={(e) => setNewFile(e.target.files[0])} />
-            <input type="text" placeholder="Комментарий" onChange={(e) => setComment(e.target.value)} />
-            <button onClick={handleUpload}>Загрузить</button>
+            {/* Форма загрузки нового файла */}
+            <h2>Загрузить новый файл</h2>
+            <LoadingFile />
         </div>
     );
 }
 
 export default FileManager;
-
-
-function FileManager() {
-    return (
-        <div>
-            <h1>Файловый менеджер</h1>
-            {/* Список файлов */}
-            {/* Форма загрузки файла */}
-            <LoadingFile />
-        </div>
-    );
-}

@@ -1,0 +1,43 @@
+.home-container {
+    text-align: center;
+    padding: 20px;
+    background-image: url('/img/mycloud2.jpg'); /* Путь к вашему изображению */
+    background-size: cover; /* Растягивает изображение, чтобы оно заполнило весь контейнер */
+    background-position: center; /* Центрует изображение */
+    background-repeat: no-repeat; /* Избегает повторения изображения */
+    height: 100vh; /* Устанавливает высоту на весь экран */
+    width: 100%; /* Устанавливает ширину на 100% */
+}
+
+.home-title {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.home-description {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    color: #555;
+}
+
+.home-buttons {
+    margin-top: 20px;
+}
+
+.home-button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+}
+
+.home-button:hover {
+    background-color: #0056b3;
+}

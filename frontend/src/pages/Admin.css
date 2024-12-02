@@ -1,0 +1,49 @@
+.admin-container {
+    padding: 20px;
+  }
+  
+  .admin-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .admin-table th, .admin-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .admin-table th {
+    background-color: #f4f4f4;
+  }
+  
+  .admin-table td {
+    vertical-align: middle;
+  }
+  
+  .admin-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .admin-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .admin-actions button:hover {
+    background-color: #ddd;
+  }
+  
+  .admin-error {
+    color: red;
+    font-weight: bold;
+  }

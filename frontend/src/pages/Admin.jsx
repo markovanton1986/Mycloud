@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./Admin.css";
 
 const Admin = () => {
   const [users, setUsers] = useState([]);
@@ -34,9 +35,10 @@ const Admin = () => {
   }
 
   return (
-    <div>
-      <h1>Администратор</h1>
-      <table>
+    <div className="admin-container">
+      <h1 className="admin-title">Администратор</h1>
+      {error && <div className="admin-error">Ошибка: {error}</div>}
+      <table className="admin-table">
         <thead>
           <tr>
             <th>Имя пользователя</th>
@@ -59,10 +61,12 @@ const Admin = () => {
                 <a href={user.file_storage.link}>Управлять</a>
               </td>
               <td>
-                <button onClick={() => toggleAdminStatus(user.id, user.is_admin)}>
-                  {user.is_admin ? "Отозвать администратора" : "Сделать администратором"}
-                </button>
-                <button onClick={() => deleteUser(user.id)}>Удалить</button>
+                <div className="admin-actions">
+                  <button onClick={() => toggleAdminStatus(user.id, user.is_admin)}>
+                    {user.is_admin ? "Отозвать администратора" : "Сделать администратором"}
+                  </button>
+                  <button onClick={() => deleteUser(user.id)}>Удалить</button>
+                </div>
               </td>
             </tr>
           ))}

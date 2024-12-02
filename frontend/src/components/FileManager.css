@@ -1,0 +1,119 @@
+/* Основной контейнер файлового менеджера */
+.file-manager {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    max-width: 800px;
+    margin: 20px auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовки */
+.file-manager h1,
+.file-manager h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Таблица файлов */
+.file-manager table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.file-manager table th,
+.file-manager table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.file-manager table th {
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.file-manager table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.file-manager table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Действия */
+.file-manager a {
+    color: #0066cc;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.file-manager a:hover {
+    text-decoration: underline;
+}
+
+.file-manager button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.file-manager button:hover {
+    background-color: #0056b3;
+}
+
+/* Форма загрузки */
+.file-manager form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.file-manager form input[type="file"] {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.file-manager form input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.file-manager form button {
+    align-self: flex-start;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.file-manager form button:hover {
+    background-color: #218838;
+}
+
+/* Сообщения */
+.file-manager .success-message {
+    color: #28a745;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.file-manager .error-message {
+    color: #dc3545;
+    font-weight: bold;
+    margin-top: 10px;
+}

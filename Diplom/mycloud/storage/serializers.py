@@ -13,3 +13,7 @@ class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
         fields = ['id', 'original_name', 'unique_name', 'size', 'upload_date', 'comment']
+
+
+class CustomUserSerializer:
+    pass

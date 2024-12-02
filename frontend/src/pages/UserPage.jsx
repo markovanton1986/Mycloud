@@ -6,33 +6,30 @@ function UserPage() {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [comment, setComment] = useState('');
-  const [uploadStatus, setUploadStatus] = useState(null); // null, 'uploading', 'success', 'error'
+  const [uploadStatus, setUploadStatus] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Загружаем список файлов пользователя при монтировании компонента
     fetchFiles();
   }, []);
 
   const fetchFiles = async () => {
+    setIsLoading(true);
     try {
       const response = await axios.get('/api/files/', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setFiles(response.data);
     } catch (error) {
       console.error('Ошибка при получении файлов:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-  };
+  const handleFileChange = (e) => setSelectedFile(e.target.files[0]);
 
-  const handleCommentChange = (e) => {
-    setComment(e.target.value);
-  };
+  const handleCommentChange = (e) => setComment(e.target.value);
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -47,7 +44,7 @@ function UserPage() {
 
     try {
       setUploadStatus('uploading');
-      const response = await axios.post('/api/files/upload/', formData, {
+      await axios.post('/api/files/upload/', formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'multipart/form-data',
@@ -55,11 +52,10 @@ function UserPage() {
       });
       setUploadStatus('success');
       alert('Файл успешно загружен!');
-      fetchFiles(); // Перезагружаем список файлов
+      fetchFiles();
     } catch (error) {
       setUploadStatus('error');
       console.error('Ошибка при загрузке файла:', error);
-      alert('Не удалось загрузить файл.');
     }
   };
 
@@ -67,11 +63,10 @@ function UserPage() {
     if (window.confirm('Вы уверены, что хотите удалить этот файл?')) {
       try {
         await axios.delete(`/api/files/${fileId}/`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-        fetchFiles(); // Перезагружаем список файлов
+        alert('Файл успешно удалён.');
+        fetchFiles();
       } catch (error) {
         console.error('Ошибка при удалении файла:', error);
         alert('Не удалось удалить файл.');
@@ -84,37 +79,34 @@ function UserPage() {
     if (newComment && newComment !== newName) {
       try {
         await axios.put(`/api/files/${fileId}/`, { comment: newComment }, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-        fetchFiles(); // Перезагружаем список файлов
+        alert('Комментарий успешно обновлён.');
+        fetchFiles();
       } catch (error) {
-        console.error('Ошибка при переименовании файла:', error);
-        alert('Не удалось переименовать файл.');
+        console.error('Ошибка при обновлении комментария:', error);
+        alert('Не удалось обновить комментарий.');
       }
     }
   };
 
-  const handleViewFile = (fileUrl) => {
-    window.open(fileUrl, '_blank');
+  const handleViewFile = (fileUrl) => window.open(fileUrl, '_blank');
+
+  const formatFileSize = (size) => {
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`;
   };
+
+  const formatDate = (date) => new Date(date).toLocaleString();
 
   return (
     <div className="user-page-container">
       <h2>Мои файлы</h2>
-
-      {/* Форма загрузки файла */}
       <form onSubmit={handleUpload} className="upload-form">
         <div className="form-group">
           <label htmlFor="file">Выберите файл:</label>
-          <input
-            type="file"
-            id="file"
-            onChange={handleFileChange}
-            accept="*/*"
-            required
-          />
+          <input type="file" id="file" onChange={handleFileChange} required />
         </div>
         <div className="form-group">
           <label htmlFor="comment">Комментарий:</label>
@@ -129,45 +121,43 @@ function UserPage() {
         <button type="submit" className="upload-button">Загрузить</button>
       </form>
 
-      {/* Отображение статуса загрузки */}
       {uploadStatus === 'uploading' && <p>Загрузка файла...</p>}
       {uploadStatus === 'success' && <p className="success-message">Файл успешно загружен!</p>}
       {uploadStatus === 'error' && <p className="error-message">Ошибка при загрузке файла.</p>}
 
-      {/* Список файлов */}
       <h3>Список файлов</h3>
-      <div className="file-list">
-        {files.length === 0 ? (
-          <p>У вас нет загруженных файлов.</p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Имя файла</th>
-                <th>Комментарий</th>
-                <th>Размер</th>
-                <th>Дата загрузки</th>
-                <th>Действия</th>
+      {isLoading ? (
+        <p>Загрузка...</p>
+      ) : files.length === 0 ? (
+        <p>У вас нет загруженных файлов.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Имя файла</th>
+              <th>Комментарий</th>
+              <th>Размер</th>
+              <th>Дата загрузки</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {files.map((file) => (
+              <tr key={file.id}>
+                <td>{file.name}</td>
+                <td>{file.comment}</td>
+                <td>{formatFileSize(file.size)}</td>
+                <td>{formatDate(file.uploaded_at)}</td>
+                <td>
+                  <button onClick={() => handleViewFile(file.url)}>Просмотр</button>
+                  <button onClick={() => handleRename(file.id, file.comment)}>Переименовать</button>
+                  <button onClick={() => handleDelete(file.id)}>Удалить</button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {files.map((file) => (
-                <tr key={file.id}>
-                  <td>{file.name}</td>
-                  <td>{file.comment}</td>
-                  <td>{file.size} KB</td>
-                  <td>{new Date(file.uploaded_at).toLocaleString()}</td>
-                  <td>
-                    <button onClick={() => handleViewFile(file.url)}>Просмотр</button>
-                    <button onClick={() => handleRename(file.id, file.comment)}>Переименовать</button>
-                    <button onClick={() => handleDelete(file.id)}>Удалить</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

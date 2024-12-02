@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './LoadingFile.css'; 
 
 function LoadingFile() {
     const [selectedFile, setSelectedFile] = useState(null);

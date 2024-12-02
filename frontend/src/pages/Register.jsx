@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import "./Register.css";
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -14,13 +15,17 @@ const Register = () => {
     const validateForm = () => {
         const newErrors = {};
 
+        // Валидация логина
         if (!/^[a-zA-Z][a-zA-Z0-9]{3,19}$/.test(formData.username)) {
-            newErrors.username =
-                "Логин - только латинские буквы и цифры, первый символ - буква, длина от 4 до 20 символов.";
+            newErrors.username = "Логин - только латинские буквы и цифры, первый символ - буква, длина от 4 до 20 символов.";
         }
+
+        // Валидация email
         if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = "Введите корректный email.";
         }
+
+        // Валидация пароля
         if (
             !/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(formData.password)
         ) {
@@ -34,23 +39,34 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Проверка на валидность формы
         if (!validateForm()) return;
 
         try {
+            // Отправка данных на сервер
             await axios.post("http://localhost:8000/api/register/", formData);
             setSuccess(true);
         } catch (error) {
-            setErrors({ server: "Ошибка сервера. Попробуйте позже." });
+            // Обработка ошибок с сервера
+            if (error.response && error.response.data) {
+                setErrors({ server: error.response.data.detail || "Ошибка сервера. Попробуйте позже." });
+            } else {
+                setErrors({ server: "Ошибка сети. Попробуйте позже." });
+            }
         }
     };
 
     return (
-        <div style={{ textAlign: "center", padding: "20px" }}>
-            <h2>Регистрация</h2>
+        <div className="register-container">
+            <h2 className="register-title">Регистрация</h2>
             {success ? (
-                <p>Вы успешно зарегистрировались! Перейдите на <a href="/login">страницу входа</a>.</p>
+                <p className="register-success">
+                    Вы успешно зарегистрировались! Перейдите на{" "}
+                    <a href="/login" className="register-link">страницу входа</a>.
+                </p>
             ) : (
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="register-form">
                     <div>
                         <input
                             type="text"
@@ -60,7 +76,7 @@ const Register = () => {
                                 setFormData({ ...formData, username: e.target.value })
                             }
                         />
-                        <div style={{ color: "red" }}>{errors.username}</div>
+                        <div className="error-message">{errors.username}</div>
                     </div>
                     <div>
                         <input
@@ -81,7 +97,7 @@ const Register = () => {
                                 setFormData({ ...formData, email: e.target.value })
                             }
                         />
-                        <div style={{ color: "red" }}>{errors.email}</div>
+                        <div className="error-message">{errors.email}</div>
                     </div>
                     <div>
                         <input
@@ -92,10 +108,10 @@ const Register = () => {
                                 setFormData({ ...formData, password: e.target.value })
                             }
                         />
-                        <div style={{ color: "red" }}>{errors.password}</div>
+                        <div className="error-message">{errors.password}</div>
                     </div>
                     <button type="submit">Зарегистрироваться</button>
-                    <div style={{ color: "red" }}>{errors.server}</div>
+                    <div className="error-message">{errors.server}</div>
                 </form>
             )}
         </div>

@@ -1,68 +1,122 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
+/* Сброс стилей для базовых элементов */
+*,
+*::before,
+*::after {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Основные стили для body */
+body {
+  font-family: 'Arial', sans-serif; /* Шрифт */
+  background-color: #f4f4f9; /* Цвет фона */
+  color: #333; /* Цвет текста */
+  line-height: 1.6;
+  padding: 0 10px;
+  margin: 0;
 }
 
+/* Стили для заголовков */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 10px 0;
+}
+
+/* Стили для ссылок */
+a {
+  text-decoration: none; /* Убираем подчеркивание */
+  color: inherit; /* Цвет по умолчанию, может быть переопределен */
+}
+
+a:hover {
+  text-decoration: underline; /* Подчеркивание при наведении */
+}
+
+/* Основной контейнер */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Для кнопок */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #4CAF50; /* Зеленый фон */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  border-radius: 5px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+button:hover {
+  background-color: #45a049; /* Темнее при наведении */
+}
+
+/* Стандартные стили для формы */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="file"],
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+/* Фокус на инпуте */
+input:focus, textarea:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+/* Общее для таблиц */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #4CAF50;
+  color: white;
+}
+
+tr:hover {
+  background-color: #f5f5f5;
+}
+
+/* Для сообщений об ошибках или успехе */
+.error-message {
+  color: red;
+  font-weight: bold;
+}
+
+.success-message {
+  color: green;
+  font-weight: bold;
+}
+
+/* Для страницы загрузки */
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Отображение при загрузке */
+.uploading-message {
+  font-size: 18px;
+  color: #ffa500;
 }

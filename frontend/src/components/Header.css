@@ -1,0 +1,70 @@
+/* Основные стили для header */
+.header {
+  background-color: #333;
+  padding: 20px;
+  color: #fff;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center; /* Выравниваем логотип и текст по центру */
+  text-decoration: none;
+  color: #fff;
+}
+
+.logo-img {
+  height: 40px; /* Устанавливаем размер логотипа */
+  width: auto;
+  margin-right: 10px; /* Отступ между логотипом и текстом */
+}
+
+.logo-text {
+  font-size: 24px; /* Размер шрифта для текста */
+  font-weight: bold;
+}
+
+.nav {
+  margin-left: auto;
+}
+
+.nav-links {
+  display: flex;
+  list-style-type: none;
+}
+
+.nav-links li {
+  margin: 0 15px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #fff;
+  font-size: 16px;
+}
+
+.nav-link:hover {
+  color: #FFD700; /* Цвет при наведении */
+}
+
+.auth-buttons {
+  display: flex;
+}
+
+.auth-button {
+  text-decoration: none;
+  background-color: #FFD700;
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 4px;
+  margin-left: 10px;
+}
+
+.auth-button:hover {
+  background-color: #ffcc00;
+}

@@ -1,94 +1,55 @@
-/* Общий стиль для body */
-body {
-  margin: 0;
+/* App.css */
+
+/* Общие стили для приложения */
+.app {
   font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
-}
-
-/* Стили навигационной панели */
-nav {
-  background-color: #333;
-  padding: 1rem;
+  background-color: #f4f4f9;
+  min-height: 100vh;
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
 }
 
-/* Стили для ссылок в навигации */
+.main-content {
+  padding: 20px;
+  background-color: #ffffff;
+  flex-grow: 1;
+}
+
+/* Стили для шапки */
+header {
+  background-color: #333;
+  color: white;
+  padding: 15px 0;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+}
+
+/* Стили для навигации */
+nav {
+  background-color: #444;
+  padding: 10px;
+  color: white;
+  text-align: center;
+}
+
 nav a {
   color: white;
   text-decoration: none;
-  font-size: 1.2rem;
-  transition: color 0.3s;
+  margin: 0 15px;
 }
 
 nav a:hover {
-  color: #00bcd4;
+  text-decoration: underline;
 }
 
-/* Основной контейнер страницы */
-main {
-  padding: 2rem;
-}
-
-/* Универсальный стиль кнопок */
-button {
-  background-color: #00bcd4;
+/* Стили для подвала */
+footer {
+  background-color: #333;
   color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button:hover {
-  background-color: #0097a7;
-}
-
-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-/* Стиль форм */
-form {
-  max-width: 400px;
-  margin: 2rem auto;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-form input,
-form select,
-form textarea {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-form label {
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  display: block;
-}
-
-form input:focus,
-form select:focus,
-form textarea:focus {
-  outline: none;
-  border-color: #00bcd4;
-  box-shadow: 0 0 4px rgba(0, 188, 212, 0.5);
-}
-
-/* Центрирование контента */
-.center {
+  padding: 10px 0;
   text-align: center;
-  margin-top: 2rem;
+  margin-top: 20px;
 }
