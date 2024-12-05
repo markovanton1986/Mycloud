@@ -17,7 +17,7 @@
 
 /* Стили для шапки */
 header {
-  background-color: #333;
+  background-color: #333333;
   color: white;
   padding: 15px 0;
   text-align: center;
@@ -29,7 +29,7 @@ header h1 {
 
 /* Стили для навигации */
 nav {
-  background-color: #444;
+  background-color: #59a6d0;
   padding: 10px;
   color: white;
   text-align: center;

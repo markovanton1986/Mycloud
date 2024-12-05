@@ -5,7 +5,7 @@ import './LoadingFile.css';
 function LoadingFile() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [comment, setComment] = useState('');
-    const [uploadStatus, setUploadStatus] = useState(null); // null, 'uploading', 'success', 'error'
+    const [uploadStatus, setUploadStatus] = useState(null);
 
     const handleFileChange = (e) => {
         setSelectedFile(e.target.files[0]);

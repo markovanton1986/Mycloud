@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // Если используется React Router
+import { Link } from 'react-router-dom';
 import './Header.css';
 
 const Header = () => {
@@ -13,13 +13,13 @@ const Header = () => {
             <span className="logo-text">Mycloud</span>
           </Link>
         </div>
-        <nav className="nav">
+        {/* <nav className="nav">
           <ul className="nav-links">
             <li><Link to="/dashboard" className="nav-link">Приборная панель</Link></li>
             <li><Link to="/files" className="nav-link">Мои файлы</Link></li>
             <li><Link to="/profile" className="nav-link">Профиль</Link></li>
           </ul>
-        </nav>
+        </nav> */}
         <div className="auth-buttons">
           <Link to="/login" className="auth-button">Login</Link>
           <Link to="/register" className="auth-button">Register</Link>

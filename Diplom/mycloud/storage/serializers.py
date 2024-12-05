@@ -4,10 +4,12 @@ from .models import File
 
 User = get_user_model()
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'is_admin']
+
 
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,4 +18,7 @@ class FileSerializer(serializers.ModelSerializer):
 
 
 class CustomUserSerializer:
+    def __init__(self):
+        self.data = None
+
     pass

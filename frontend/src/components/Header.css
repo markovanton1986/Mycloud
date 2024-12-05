@@ -1,6 +1,6 @@
 /* Основные стили для header */
 .header {
-  background-color: #333;
+  background-color: #2997ea;
   padding: 20px;
   color: #fff;
 }
@@ -13,19 +13,19 @@
 
 .logo-link {
   display: flex;
-  align-items: center; /* Выравниваем логотип и текст по центру */
+  align-items: center;
   text-decoration: none;
   color: #fff;
 }
 
 .logo-img {
-  height: 40px; /* Устанавливаем размер логотипа */
+  height: 40px; 
   width: auto;
-  margin-right: 10px; /* Отступ между логотипом и текстом */
+  margin-right: 10px;
 }
 
 .logo-text {
-  font-size: 24px; /* Размер шрифта для текста */
+  font-size: 24px;
   font-weight: bold;
 }
 
@@ -49,7 +49,7 @@
 }
 
 .nav-link:hover {
-  color: #FFD700; /* Цвет при наведении */
+  color: #FFD700;
 }
 
 .auth-buttons {
@@ -58,7 +58,7 @@
 
 .auth-button {
   text-decoration: none;
-  background-color: #FFD700;
+  background-color: #62b4e0;
   color: #333;
   padding: 8px 16px;
   border-radius: 4px;
@@ -66,5 +66,5 @@
 }
 
 .auth-button:hover {
-  background-color: #ffcc00;
+  background-color: #4a7bc9;
 }

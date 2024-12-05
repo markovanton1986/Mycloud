@@ -1,62 +1,63 @@
+/* Общий контейнер формы */
 .register-container {
-    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
     padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .register-title {
-    font-size: 2rem;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
     margin-bottom: 20px;
-    color: #333;
 }
 
 .register-form {
-    display: inline-block;
-    text-align: left;
-    background-color: #f9f9f9;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .register-form input {
+    padding: 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
     width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
+}
+
+.register-form input:focus {
+    border-color: #007bff;
+    outline: none;
 }
 
 .register-form button {
-    width: 100%;
-    padding: 10px;
-    font-size: 1rem;
-    color: #fff;
+    padding: 12px;
     background-color: #007bff;
+    color: white;
+    font-size: 16px;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
-.register-form button:hover {
+.register-form button:disabled {
+    background-color: #c0c0c0;
+}
+
+.register-form button:hover:not(:disabled) {
     background-color: #0056b3;
 }
 
-.register-form .error-message {
-    color: red;
-    font-size: 0.9rem;
-    margin-top: -10px;
-    margin-bottom: 10px;
-}
-
+/* Сообщение об успехе регистрации */
 .register-success {
-    font-size: 1rem;
     color: #28a745;
-    margin: 20px 0;
+    text-align: center;
+    font-size: 16px;
 }
 
 .register-link {
@@ -66,4 +67,41 @@
 
 .register-link:hover {
     text-decoration: underline;
+}
+
+/* Сообщения об ошибках */
+.error-message {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Добавление отступов для отдельных полей */
+.register-form div {
+    position: relative;
+}
+
+/* Стили для сообщений о ошибках поля (опционально) */
+.register-form .error-message {
+    font-size: 12px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    color: red;
+    margin-top: 5px;
+}
+
+/* Каскадное оформление для мобильных устройств */
+@media (max-width: 600px) {
+    .register-container {
+        padding: 15px;
+    }
+
+    .register-title {
+        font-size: 20px;
+    }
+
+    .register-form input, .register-form button {
+        font-size: 14px;
+    }
 }

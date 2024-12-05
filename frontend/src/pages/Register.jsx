@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { validateRegistrationForm } from "./Validations";
 import "./Register.css";
 
 const Register = () => {
@@ -12,41 +13,37 @@ const Register = () => {
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState(false);
 
-    const validateForm = () => {
-        const newErrors = {};
-
-        // Валидация логина
-        if (!/^[a-zA-Z][a-zA-Z0-9]{3,19}$/.test(formData.username)) {
-            newErrors.username = "Логин - только латинские буквы и цифры, первый символ - буква, длина от 4 до 20 символов.";
-        }
-
-        // Валидация email
-        if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = "Введите корректный email.";
-        }
-
-        // Валидация пароля
-        if (
-            !/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(formData.password)
-        ) {
-            newErrors.password =
-                "Пароль - не менее 6 символов: как минимум одна заглавная буква, одна цифра и один специальный символ.";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Проверка на валидность формы
-        if (!validateForm()) return;
+        const validationErrors = validateRegistrationForm(formData);
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length > 0) {
+            return;
+        }
 
         try {
             // Отправка данных на сервер
-            await axios.post("http://localhost:8000/api/register/", formData);
-            setSuccess(true);
+            const response = await axios.post(
+                "http://localhost:8000/api/register/", 
+                formData, 
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            
+            // Устанавливаем флаг успеха только после того, как получен положительный ответ от сервера
+            if (response.status === 201) {
+                setSuccess(true);
+            }
         } catch (error) {
             // Обработка ошибок с сервера
             if (error.response && error.response.data) {
@@ -71,47 +68,43 @@ const Register = () => {
                         <input
                             type="text"
                             placeholder="Логин"
+                            name="username"
                             value={formData.username}
-                            onChange={(e) =>
-                                setFormData({ ...formData, username: e.target.value })
-                            }
+                            onChange={handleInputChange}
                         />
-                        <div className="error-message">{errors.username}</div>
+                        {errors.username && <div className="error-message">{errors.username}</div>}
                     </div>
                     <div>
                         <input
                             type="text"
                             placeholder="Полное имя"
+                            name="fullName"
                             value={formData.fullName}
-                            onChange={(e) =>
-                                setFormData({ ...formData, fullName: e.target.value })
-                            }
+                            onChange={handleInputChange}
                         />
                     </div>
                     <div>
                         <input
                             type="email"
                             placeholder="Email"
+                            name="email"
                             value={formData.email}
-                            onChange={(e) =>
-                                setFormData({ ...formData, email: e.target.value })
-                            }
+                            onChange={handleInputChange}
                         />
-                        <div className="error-message">{errors.email}</div>
+                        {errors.email && <div className="error-message">{errors.email}</div>}
                     </div>
                     <div>
                         <input
                             type="password"
                             placeholder="Пароль"
+                            name="password"
                             value={formData.password}
-                            onChange={(e) =>
-                                setFormData({ ...formData, password: e.target.value })
-                            }
+                            onChange={handleInputChange}
                         />
-                        <div className="error-message">{errors.password}</div>
+                        {errors.password && <div className="error-message">{errors.password}</div>}
                     </div>
                     <button type="submit">Зарегистрироваться</button>
-                    <div className="error-message">{errors.server}</div>
+                    {errors.server && <div className="error-message">{errors.server}</div>}
                 </form>
             )}
         </div>

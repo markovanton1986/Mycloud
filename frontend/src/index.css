@@ -9,9 +9,9 @@
 
 /* Основные стили для body */
 body {
-  font-family: 'Arial', sans-serif; /* Шрифт */
-  background-color: #f4f4f9; /* Цвет фона */
-  color: #333; /* Цвет текста */
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
   line-height: 1.6;
   padding: 0 10px;
   margin: 0;
@@ -25,12 +25,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Стили для ссылок */
 a {
-  text-decoration: none; /* Убираем подчеркивание */
-  color: inherit; /* Цвет по умолчанию, может быть переопределен */
+  text-decoration: none;
+  color: inherit;
 }
 
 a:hover {
-  text-decoration: underline; /* Подчеркивание при наведении */
+  text-decoration: underline;
 }
 
 /* Основной контейнер */
@@ -42,7 +42,7 @@ a:hover {
 
 /* Для кнопок */
 button {
-  background-color: #4CAF50; /* Зеленый фон */
+  background-color: #62b4e0;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -52,7 +52,7 @@ button {
 }
 
 button:hover {
-  background-color: #45a049; /* Темнее при наведении */
+  background-color: #4a7bc9;
 }
 
 /* Стандартные стили для формы */
