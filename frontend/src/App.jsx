@@ -34,7 +34,7 @@ const App = () => {
                         <Route path="/files" element={<FileStorage />} />
                         <Route path="/upload" element={<LoadingFile />} />
                         <Route path="/admin" element={<Admin />} />
-                        <Route path="/user" element={<UserPage />} />
+                        <Route path="/UserPage" element={<UserPage />} />
                         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
                     </Routes>
                 </main>

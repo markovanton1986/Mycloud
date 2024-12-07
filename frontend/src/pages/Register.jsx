@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { validateRegistrationForm } from "./Validations";
 import "./Register.css";
@@ -13,6 +14,8 @@ const Register = () => {
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState(false);
 
+    const navigate = useNavigate();
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -20,16 +23,15 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         const validationErrors = validateRegistrationForm(formData);
         setErrors(validationErrors);
-
+    
         if (Object.keys(validationErrors).length > 0) {
             return;
         }
-
+    
         try {
-            // Отправка данных на сервер
             const response = await axios.post(
                 "http://localhost:8000/api/register/", 
                 formData, 
@@ -39,25 +41,37 @@ const Register = () => {
                     },
                 }
             );
+
+            console.log("Response from server:", response);
             
-            // Устанавливаем флаг успеха только после того, как получен положительный ответ от сервера
-            if (response.status === 201) {
+            if (response.status === 200) {
                 setSuccess(true);
+                console.log("Регистрация прошла успешно, перенаправление на вход в систему...");
+                setTimeout(() => {
+                    navigate("/login");
+                }, 10000);
+            } else {
+                setErrors({ server: "Неожиданный ответ от сервера." });
             }
+    
         } catch (error) {
-            // Обработка ошибок с сервера
-            if (error.response && error.response.data) {
-                setErrors({ server: error.response.data.detail || "Ошибка сервера. Попробуйте позже." });
+            if (error.response) {
+                if (error.response.status === 400) {
+                    setErrors({ server: "Неверный формат данных." });
+                } else {
+                    setErrors({ server: error.response.data.detail || "Ошибка сервера. Попробуйте позже." });
+                }
             } else {
                 setErrors({ server: "Ошибка сети. Попробуйте позже." });
             }
         }
     };
 
+
     return (
         <div className="register-container">
             <h2 className="register-title">Регистрация</h2>
-            {success ? (
+            {success ? ( 
                 <p className="register-success">
                     Вы успешно зарегистрировались! Перейдите на{" "}
                     <a href="/login" className="register-link">страницу входа</a>.

@@ -1,6 +1,9 @@
+from abc import ABC
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import File
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -14,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ['id', 'original_name', 'unique_name', 'size', 'upload_date', 'comment']
+        fields = ['id', 'name', 'size', 'uploaded_at', 'file', 'comment']
 
 
 class CustomUserSerializer:
@@ -22,3 +25,5 @@ class CustomUserSerializer:
         self.data = None
 
     pass
+
+

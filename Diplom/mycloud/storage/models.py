@@ -38,7 +38,7 @@ class File(models.Model):
         related_name="files"
     )
     name = models.CharField(max_length=255)
-    file = models.FileField(upload_to='user_files/')  # Путь к файлу
+    file = models.FileField(upload_to='files/')  # Путь к файлу
     uploaded_at = models.DateTimeField(auto_now_add=True)
     size = models.PositiveIntegerField()  # Размер файла в байтах
     upload_date = models.DateTimeField(auto_now_add=True)  # Дата загрузки

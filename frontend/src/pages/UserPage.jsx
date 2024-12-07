@@ -5,21 +5,51 @@ import './UserPage.css';
 function UserPage() {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState(''); 
   const [uploadStatus, setUploadStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const refreshAccessToken = async () => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      console.error('Refresh token не найден');
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://localhost:8000/api/token/refresh/', {
+        refresh: refreshToken
+      });
+      const newAccessToken = response.data.access;
+      localStorage.setItem('token', newAccessToken);
+      return newAccessToken;
+    } catch (error) {
+      console.error('Ошибка при обновлении токена:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
-    fetchFiles();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('Токен не найден');
+      return;
+    }
+    fetchFiles(token);
   }, []);
 
-  const fetchFiles = async () => {
+  const fetchFiles = async (token) => {
     setIsLoading(true);
     try {
-      const response = await axios.get('/api/files/', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      const response = await axios.get('http://localhost:8000/api/files/', {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setFiles(response.data);
+      console.log('Received files:', response.data);
+      if (response.data && Array.isArray(response.data.files)) {
+        setFiles(response.data.files);
+      } else {
+        console.error('Файлы не найдены или структура данных неверна');
+      }
     } catch (error) {
       console.error('Ошибка при получении файлов:', error);
     } finally {
@@ -28,7 +58,7 @@ function UserPage() {
   };
 
   const handleFileChange = (e) => setSelectedFile(e.target.files[0]);
-
+  
   const handleCommentChange = (e) => setComment(e.target.value);
 
   const handleUpload = async (e) => {
@@ -42,17 +72,19 @@ function UserPage() {
     formData.append('file', selectedFile);
     formData.append('comment', comment);
 
+    const token = localStorage.getItem('token');
+
     try {
       setUploadStatus('uploading');
-      await axios.post('/api/files/upload/', formData, {
+      await axios.post('http://localhost:8000/api/files/upload/', formData, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
       setUploadStatus('success');
       alert('Файл успешно загружен!');
-      fetchFiles();
+      fetchFiles(token); 
     } catch (error) {
       setUploadStatus('error');
       console.error('Ошибка при загрузке файла:', error);
@@ -61,12 +93,13 @@ function UserPage() {
 
   const handleDelete = async (fileId) => {
     if (window.confirm('Вы уверены, что хотите удалить этот файл?')) {
+      const token = localStorage.getItem('token');
       try {
-        await axios.delete(`/api/files/${fileId}/`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        await axios.delete(`http://localhost:8000/api/files/${fileId}/`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
         alert('Файл успешно удалён.');
-        fetchFiles();
+        fetchFiles(token); 
       } catch (error) {
         console.error('Ошибка при удалении файла:', error);
         alert('Не удалось удалить файл.');
@@ -77,12 +110,13 @@ function UserPage() {
   const handleRename = async (fileId, newName) => {
     const newComment = prompt('Введите новый комментарий:', newName);
     if (newComment && newComment !== newName) {
+      const token = localStorage.getItem('token');
       try {
-        await axios.put(`/api/files/${fileId}/`, { comment: newComment }, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        await axios.put(`http://localhost:8000/api/files/${fileId}/`, { comment: newComment }, {
+          headers: { Authorization: `Bearer ${token}` },
         });
         alert('Комментарий успешно обновлён.');
-        fetchFiles();
+        fetchFiles(token);
       } catch (error) {
         console.error('Ошибка при обновлении комментария:', error);
         alert('Не удалось обновить комментарий.');
