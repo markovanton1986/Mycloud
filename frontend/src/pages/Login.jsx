@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; 
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
@@ -10,54 +10,47 @@ const Login = () => {
     const [message, setMessage] = useState("");
     const navigate = useNavigate();
 
-
-
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        console.log("Submitting form with data:", formData);
-    
+        setError(""); // Сброс ошибки
+
         try {
-            const response = await axios.post("http://localhost:8000/api/token/", formData, {
-                headers: { "Content-Type": "application/json" },
-            });
-    
-            console.log("Tokens received:", response.data.access, response.data.refresh);
-    
-            if (response.data.access && response.data.refresh) {
-                localStorage.setItem("token", response.data.access);
-    
-                setError("");
-                setMessage("Вы успешно вошли в систему!");
-    
-                if (response.data.is_admin) {
-                    console.log("Redirecting to admin...");
-                    navigate("/admin");
-                } else {
-                    console.log("Redirecting to UserPage...");
-                    navigate("/UserPage");
+            const response = await axios.post(
+                "http://localhost:8000/api/login/",
+                formData,
+                {
+                    headers: { "Content-Type": "application/json" },
+                    withCredentials: true,  // Отправка с cookies
                 }
+            );
+
+            console.log("Успешный вход:", response.data);
+
+            // Токены хранятся в cookies, так что нет нужды в sessionStorage
+            setMessage("Вы успешно вошли в систему!");
+
+            // Переход на соответствующую страницу
+            if (response.data.is_staff) {
+                console.log("Redirecting to admin...");
+                navigate("/admin");
             } else {
-                console.error("Tokens are missing in the response.");
-                setError("Токены не получены. Проверьте данные.");
+                console.log("Redirecting to UserPage...");
+                navigate("/UserPage");
             }
         } catch (error) {
-            console.error("Login error:", error);
-            setError("Неправильный логин или пароль.");
+            console.error("Ошибка входа:", error);
+            setError("Ошибка входа, проверьте логин и пароль.");
         } finally {
             setLoading(false);
         }
     };
 
-
-
-
     return (
         <div style={{ textAlign: "center", padding: "20px" }}>
             <h2>Вход</h2>
 
-            {/* Display success or error message */}
+            {/* Отображение сообщений об успехе или ошибке */}
             {message && <div style={{ color: "green" }}>{message}</div>}
             {error && <div style={{ color: "red" }}>{error}</div>}
 

@@ -1,146 +1,111 @@
-from django.http import JsonResponse
-from django.contrib.auth import authenticate, login, logout
+from datetime import timedelta, timezone
+from django.contrib.auth import authenticate, get_user_model
 from django.views.decorators.csrf import csrf_exempt
-
-from .models import CustomUser, File
-from .serializers import FileSerializer, CustomUserSerializer
-import json
-
-
-
-from datetime import timedelta
-from django.utils import timezone
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.http import JsonResponse
 from .models import File
-from rest_framework import status
+from .serializers import FileSerializer, UserSerializer
+import json
+from rest_framework.permissions import IsAdminUser
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from .models import CustomUser
+from .serializers import CustomUserSerializer
 
-
-from rest_framework_simplejwt.views import TokenRefreshView
-from rest_framework_simplejwt.tokens import RefreshToken
-
-
-
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import get_user_model
-from rest_framework import status
-
-
+User = get_user_model()
 # Регистрация пользователя
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def register_user(request):
-    data = json.loads(request.body)
+    data = json.loads(request.body)  # Получаем данные из запроса
+    print("Received data:", data)  # Добавляем логирование
+
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
 
+    # Проверка обязательных полей
     if not username or not email or not password:
+        print("Error: Missing fields")  # Логируем ошибку
         return JsonResponse({'error': 'Все поля обязательны.'}, status=400)
 
-    if CustomUser.objects.filter(username=username).exists():
+    if User.objects.filter(username=username).exists():
+        print("Error: Username already exists")  # Логируем ошибку
         return JsonResponse({'error': 'Пользователь с таким username уже существует.'}, status=400)
 
-    if CustomUser.objects.filter(email=email).exists():
+    if User.objects.filter(email=email).exists():
+        print("Error: Email already exists")  # Логируем ошибку
         return JsonResponse({'error': 'Пользователь с таким email уже существует.'}, status=400)
 
-    CustomUser.objects.create_user(username=username, email=email, password=password)
-    return JsonResponse({'message': 'Пользователь успешно зарегистрирован.'})
+    # Создание пользователя
+    user = User.objects.create_user(username=username, email=email, password=password)
+    print("User created successfully:", user)  # Логируем успешную регистрацию
+
+    # user.groups.add(Group.objects.get(name='some_group'))  # Здесь добавляем в нужную группу
+    # user.is_staff = True  # Если хотите сделать пользователя администратором
+    # user.save()
+
+    return JsonResponse({'message': 'Пользователь успешно зарегистрирован.'}, status=201)
 
 
 # Вход пользователя
-@csrf_exempt
+
+
 @api_view(['POST'])
+@permission_classes([AllowAny])  # Разрешить доступ всем пользователям
 def login_user(request):
-    data = json.loads(request.body)
-    username = data.get('username')
-    password = data.get('password')
+    username = request.data.get("username")
+    password = request.data.get("password")
 
+    # Аутентификация пользователя
     user = authenticate(username=username, password=password)
-    if user is not None:
-        # Генерация токенов
+    if user:
         refresh = RefreshToken.for_user(user)
-        access = refresh.access_token
+        access_token = str(refresh.access_token)
+        refresh_token_str = str(refresh)
 
-        return JsonResponse({
-            'message': 'Успешный вход в систему.',
-            'refresh': str(refresh),
-            'access': str(access),
-            'is_admin': user.is_staff  # Например, для проверки прав администратора
+        # Сохраняем токены в cookies
+        response = Response({
+            "message": "Вход выполнен успешно",
+            "access": access_token,
+            "refresh": refresh_token_str,
         })
-    return JsonResponse({'error': 'Неверные учетные данные.'}, status=401)
+
+        response.set_cookie("access_token", access_token, httponly=True, secure=False, samesite='Lax')
+        response.set_cookie("refresh_token", refresh_token_str, httponly=True, secure=False, samesite='Lax')
+
+        return response
+
+    return Response({"error": "Неправильный логин или пароль"}, status=400)
 
 
 # Выход пользователя
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@api_view(["POST"])
 def logout_user(request):
-    logout(request)
-    return JsonResponse({'message': 'Успешный выход.'})
+    response = Response({"message": "Вы вышли из системы"})
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return response
 
 
-# Список пользователей (админ)
-@api_view(['GET'])
-@permission_classes([IsAdminUser])
-def list_users(request):
-    current_user = request.user  # Используем request для получения текущего пользователя
-    if current_user.is_superuser:  # Дополнительная проверка (например, для суперпользователей)
-        users = CustomUser.objects.all()
-        serializer = CustomUserSerializer(users, many=True)
-        return JsonResponse(serializer.data, safe=False)
-    return JsonResponse({'error': 'Доступ запрещен'}, status=403)
-
-
-# Удаление пользователя (админ)
-@api_view(['DELETE'])
-@permission_classes([IsAdminUser])  # Только для администраторов
-def delete_user(request, user_id):  # Используем request для дальнейшей логики
-    try:
-        # Находим пользователя по id
-        user = CustomUser.objects.get(id=user_id)
-
-        # Дополнительная проверка прав доступа пользователя (если необходимо)
-        if request.user != user:  # например, проверка, не пытается ли текущий пользователь удалить себя
-            return JsonResponse({'error': 'Вы не можете удалить себя.'}, status=403)
-
-        # Удаляем пользователя
-        user.delete()
-
-        # Возвращаем сообщение об успешном удалении
-        return JsonResponse({'message': 'Пользователь удален.'})
-    except CustomUser.DoesNotExist:
-        # Если пользователь не найден, возвращаем ошибку
-        return JsonResponse({'error': 'Пользователь не найден.'}, status=404)
-
-
-# Список файлов
+# Список файлов (защищенный доступ)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_files(request):
     try:
-        # Получаем все файлы текущего пользователя
         files = File.objects.filter(user=request.user)
 
-        # Если файлов нет, возвращаем сообщение
         if not files.exists():
-            return JsonResponse({'message': 'У вас нет загруженных файлов.'}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'message': 'У вас нет загруженных файлов.'}, status=404)
 
-        # Сериализация данных
         serializer = FileSerializer(files, many=True)
-
-        # Возвращаем сериализованные данные
-        return JsonResponse({'files': serializer.data}, status=status.HTTP_200_OK)
+        return JsonResponse({'files': serializer.data}, status=200)
 
     except Exception as e:
-        # Логирование ошибки на сервере
-        print(f"Error while fetching files: {e}")
-
-        # Возвращаем ошибку 500 с сообщением
-        return Response({'error': 'Произошла ошибка при получении файлов.'},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Error: {e}")
+        return JsonResponse({'error': 'Произошла ошибка при получении файлов.'}, status=500)
 
 
 # Загрузка файла
@@ -170,19 +135,15 @@ def delete_file(request, file_id):
 @permission_classes([IsAuthenticated])
 def download_file(request, file_id):
     try:
-        # Получаем файл по file_id и пользователю
         file = File.objects.get(id=file_id, user=request.user)
 
-        # Устанавливаем время истечения для файла (например, 30 дней с момента загрузки)
         expiration_time = file.uploaded_at + timedelta(days=30)
 
-        # Проверяем, истек ли срок действия файла
         if timezone.now() > expiration_time:
             return Response({
                 'error': 'Этот файл истек. Пожалуйста, загрузите его снова, если вам нужно получить доступ.',
-            }, status=410)  # Статус HTTP 410 Gone
+            }, status=410)
 
-        # Если файл не истек, продолжаем загрузку файла
         return Response({'message': 'Скачивание файла началось.'})
 
     except File.DoesNotExist:
@@ -200,6 +161,7 @@ def generate_file_link(request, file_id):
         return JsonResponse({'error': 'Файл не найден.'}, status=404)
 
 
+# Обновление токена
 @api_view(['POST'])
 def refresh_token(request):
     refresh_token = request.data.get('refresh')
@@ -213,3 +175,38 @@ def refresh_token(request):
         return JsonResponse({'error': 'Invalid refresh token'}, status=400)
 
 
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def list_users(request):
+    # Получаем всех пользователей
+    users = CustomUser.objects.all()
+    serializer = CustomUserSerializer(users, many=True)
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])  # Ограничиваем доступ только администраторам
+def delete_user(request, user_id):
+    try:
+        # Получаем пользователя по ID
+        user = CustomUser.objects.get(id=user_id)
+
+        # Дополнительная проверка (например, для запрета удалять самого себя)
+        if request.user == user:
+            return Response({'error': 'Вы не можете удалить себя.'}, status=403)
+
+        # Удаляем пользователя
+        user.delete()
+
+        # Возвращаем успешный ответ
+        return Response({'message': 'Пользователь успешно удалён.'}, status=200)
+
+    except CustomUser.DoesNotExist:
+        # Если пользователь не найден, возвращаем ошибку
+        return Response({'error': 'Пользователь не найден.'}, status=404)
+
+
+@api_view(['GET'])
+def get_user_info(request):
+    user = request.user  # Получаем текущего авторизованного пользователя
+    serializer = UserSerializer(user)
+    return Response(serializer.data)

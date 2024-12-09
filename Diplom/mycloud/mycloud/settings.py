@@ -25,19 +25,18 @@ SECRET_KEY = 'django-insecure-#m_u+@oivbwvd8mro)3rvpmi2)382zhj31-7t$q9xo85z=k)lt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
     'debug_toolbar',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -45,15 +44,14 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
@@ -155,20 +153,60 @@ REST_FRAMEWORK = {
     ],
 }
 
+BASE_STORAGE_PATH = BASE_DIR / 'storage'
+INTERNAL_IPS = ['127.0.0.1']
+
+
+
+
+
+# Настройки CORS
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ORIGINS = [
+    "http://localhost:3000",  # Ваш React-клиент
+]
+
+CORS_ALLOW_CREDENTIALS = True  # Разрешает использовать cookies
+CORS_ALLOW_HEADERS = [
+    'Content-Type',
+    'Authorization',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Credentials',
+    'x-csrftoken',  # Нужно для передачи CSRF токена
+]
+
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'DELETE',
+    'OPTIONS',  # для preflight запросов
+]
+
+# Настройки для обработки сессий и CSRF
+SESSION_COOKIE_AGE = 3600  # Время жизни cookie-сессии (1 час)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = False  # Используйте True, если у вас HTTPS
+CSRF_COOKIE_NAME = "csrftoken"  # Название cookie с CSRF токеном
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']  # Разрешаем доступ с вашего фронтенда
+
+# Настройки для JWT
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # время жизни access токена
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # время жизни refresh токена
-    'ROTATE_REFRESH_TOKENS': False,  # настройка, если refresh токен должен обновляться
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=300),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': 'django-insecure-#m_u+@oivbwvd8mro)3rvpmi2)382zhj31-7t$q9xo85z=k)lt',
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
 }
 
-BASE_STORAGE_PATH = BASE_DIR / 'storage'
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
-CORS_ALLOW_ALL_ORIGINS = True
-
-INTERNAL_IPS = ['127.0.0.1']
+# Прочее
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 

@@ -1,27 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import axios from 'axios';
 import './UserPage.css';
 
 function UserPage() {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [comment, setComment] = useState(''); 
+  const [comment, setComment] = useState('');
   const [uploadStatus, setUploadStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Функция для получения токена из cookies
+  const getTokenFromCookies = () => {
+    const cookies = document.cookie.split('; ');
+    const accessToken = cookies.find(cookie => cookie.startsWith('access_token='));
+    const refreshToken = cookies.find(cookie => cookie.startsWith('refresh_token='));
+    
+    // Для дебага
+    console.log('Access Token:', accessToken);
+    console.log('Refresh Token:', refreshToken);
+    
+    return accessToken ? accessToken.split('=')[1] : null;
+  };
+
+  // Функция для обновления токена
   const refreshAccessToken = async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const refreshToken = getTokenFromCookies();  // Получаем токен из cookies
     if (!refreshToken) {
       console.error('Refresh token не найден');
-      return;
+      return null;
     }
 
     try {
       const response = await axios.post('http://localhost:8000/api/token/refresh/', {
         refresh: refreshToken
-      });
+      }, { withCredentials: true });  // Отправляем запрос с cookies
+
       const newAccessToken = response.data.access;
-      localStorage.setItem('token', newAccessToken);
+      document.cookie = `access_token=${newAccessToken};path=/;`;
       return newAccessToken;
     } catch (error) {
       console.error('Ошибка при обновлении токена:', error);
@@ -29,62 +44,61 @@ function UserPage() {
     }
   };
 
+  // Запрос на получение файлов
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('Токен не найден');
-      return;
-    }
-    fetchFiles(token);
+    const fetchFiles = async () => {
+      const token = getTokenFromCookies();
+      if (!token) {
+        console.error('Токен не найден');
+        return;
+      }
+
+      try {
+        const response = await axios.get('http://localhost:8000/api/files/', {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,  // Разрешаем отправку cookies
+        });
+        console.log('Received files:', response.data);
+        setFiles(response.data.files || []);
+      } catch (error) {
+        console.error('Ошибка при получении файлов:', error);
+      }
+    };
+
+    fetchFiles();  // Инициализируем загрузку файлов
   }, []);
 
-  const fetchFiles = async (token) => {
-    setIsLoading(true);
-    try {
-      const response = await axios.get('http://localhost:8000/api/files/', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log('Received files:', response.data);
-      if (response.data && Array.isArray(response.data.files)) {
-        setFiles(response.data.files);
-      } else {
-        console.error('Файлы не найдены или структура данных неверна');
-      }
-    } catch (error) {
-      console.error('Ошибка при получении файлов:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleFileChange = (e) => setSelectedFile(e.target.files[0]);
-  
-  const handleCommentChange = (e) => setComment(e.target.value);
-
+  // Загрузка файлов
   const handleUpload = async (e) => {
     e.preventDefault();
+    
     if (!selectedFile) {
       alert('Выберите файл для загрузки.');
       return;
     }
-
+  
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('comment', comment);
-
-    const token = localStorage.getItem('token');
-
+  
+    // Получаем CSRF токен из cookies (если используется CSRF защита)
+    const csrfToken = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('csrftoken='))
+      ?.split('=')[1];
+  
     try {
       setUploadStatus('uploading');
       await axios.post('http://localhost:8000/api/files/upload/', formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
+          'X-CSRFToken': csrfToken,  // Добавляем CSRF токен в заголовок
         },
+        withCredentials: true,  // Отправляем cookies
       });
       setUploadStatus('success');
       alert('Файл успешно загружен!');
-      fetchFiles(token); 
+      fetchFiles();  // Загружаем файлы после загрузки
     } catch (error) {
       setUploadStatus('error');
       console.error('Ошибка при загрузке файла:', error);
@@ -93,13 +107,14 @@ function UserPage() {
 
   const handleDelete = async (fileId) => {
     if (window.confirm('Вы уверены, что хотите удалить этот файл?')) {
-      const token = localStorage.getItem('token');
       try {
+        const token = getTokenFromCookies();
         await axios.delete(`http://localhost:8000/api/files/${fileId}/`, {
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,  // Разрешаем отправку cookies
         });
         alert('Файл успешно удалён.');
-        fetchFiles(token); 
+        fetchFiles();  // Загружаем файлы после удаления
       } catch (error) {
         console.error('Ошибка при удалении файла:', error);
         alert('Не удалось удалить файл.');
@@ -110,13 +125,14 @@ function UserPage() {
   const handleRename = async (fileId, newName) => {
     const newComment = prompt('Введите новый комментарий:', newName);
     if (newComment && newComment !== newName) {
-      const token = localStorage.getItem('token');
       try {
+        const token = getTokenFromCookies();
         await axios.put(`http://localhost:8000/api/files/${fileId}/`, { comment: newComment }, {
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,  // Разрешаем отправку cookies
         });
         alert('Комментарий успешно обновлён.');
-        fetchFiles(token);
+        fetchFiles();  // Загружаем файлы после изменения комментария
       } catch (error) {
         console.error('Ошибка при обновлении комментария:', error);
         alert('Не удалось обновить комментарий.');
@@ -132,15 +148,13 @@ function UserPage() {
     return `${(size / (1024 * 1024)).toFixed(2)} MB`;
   };
 
-  const formatDate = (date) => new Date(date).toLocaleString();
-
   return (
     <div className="user-page-container">
       <h2>Мои файлы</h2>
       <form onSubmit={handleUpload} className="upload-form">
         <div className="form-group">
           <label htmlFor="file">Выберите файл:</label>
-          <input type="file" id="file" onChange={handleFileChange} required />
+          <input type="file" id="file" onChange={(e) => setSelectedFile(e.target.files[0])} required />
         </div>
         <div className="form-group">
           <label htmlFor="comment">Комментарий:</label>
@@ -148,7 +162,7 @@ function UserPage() {
             type="text"
             id="comment"
             value={comment}
-            onChange={handleCommentChange}
+            onChange={(e) => setComment(e.target.value)}
             placeholder="Введите комментарий к файлу"
           />
         </div>
@@ -181,7 +195,7 @@ function UserPage() {
                 <td>{file.name}</td>
                 <td>{file.comment}</td>
                 <td>{formatFileSize(file.size)}</td>
-                <td>{formatDate(file.uploaded_at)}</td>
+                <td>{new Date(file.uploaded_at).toLocaleString()}</td>
                 <td>
                   <button onClick={() => handleViewFile(file.url)}>Просмотр</button>
                   <button onClick={() => handleRename(file.id, file.comment)}>Переименовать</button>

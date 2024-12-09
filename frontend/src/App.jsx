@@ -10,6 +10,7 @@ import FileStorage from './components/FileStorage';
 import Admin from './pages/Admin';
 import UserPage from './pages/UserPage';
 import Login from './pages/Login';
+import Logout from "./pages/Logout";
 import Register from './pages/Register';
 import Home from './pages/Home';
 
@@ -31,6 +32,7 @@ const App = () => {
                         <Route path="/" element={<Home />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/login" element={<Login />} />
+                        <Route path="/logout" element={<Logout />} />
                         <Route path="/files" element={<FileStorage />} />
                         <Route path="/upload" element={<LoadingFile />} />
                         <Route path="/admin" element={<Admin />} />
