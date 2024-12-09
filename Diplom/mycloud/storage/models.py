@@ -6,9 +6,8 @@ from django.conf import settings
 class CustomUser(AbstractUser):
     id = models.AutoField(primary_key=True, unique=True)
     username = models.CharField(max_length=50, unique=True)
+    fullname = models.CharField(max_length=255, blank=True, null=True)
     email = models.EmailField(max_length=100, unique=True)
-    first_name = models.CharField(max_length=50, blank=True)
-    last_name = models.CharField(max_length=50, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 

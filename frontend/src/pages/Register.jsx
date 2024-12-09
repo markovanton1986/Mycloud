@@ -15,22 +15,41 @@ const Register = () => {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
+  // Обработка изменений в форме
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  // Получение CSRF токена из cookies
   const getCSRFToken = () => {
     const cookies = document.cookie.split('; ');
     const csrfCookie = cookies.find(cookie => cookie.startsWith('csrftoken='));
     return csrfCookie ? csrfCookie.split('=')[1] : null;
   };
-  
+
+  // Валидация данных перед отправкой
+  const validateFormData = () => {
+    const validationErrors = validateRegistrationForm(formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
+  };
+
+  // Обработка отправки формы
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    const csrfToken = getCSRFToken();  // Получаем CSRF токен
-  
+
+    // Если форма невалидна, не отправляем запрос
+    if (!validateFormData()) {
+      return;
+    }
+
+    const csrfToken = getCSRFToken();
+
     try {
       const response = await axios.post(
         "http://localhost:8000/api/register/",
@@ -38,28 +57,25 @@ const Register = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,  // Отправляем CSRF токен в заголовке
+            "X-CSRFToken": csrfToken,
           },
-          withCredentials: true,  // Убедитесь, что с запросом отправляются cookies
+          withCredentials: true,
         }
       );
-      console.log("Response from server:", response);
-      if (response.status === 200 || response.status === 201) {
+      
+      if (response.status === 201) {
         setSuccess(true);
         console.log("Регистрация прошла успешно, перенаправление на вход...");
         setTimeout(() => {
           navigate("/login");
-        }, 10000);  // Перенаправление через 3 секунды
+        }, 8000);
       } else {
         setErrors({ server: "Неожиданный ответ от сервера." });
       }
     } catch (error) {
       if (error.response) {
-        if (error.response.status === 400) {
-          setErrors({ server: "Неверный формат данных." });
-        } else {
-          setErrors({ server: error.response.data.detail || "Ошибка сервера. Попробуйте позже." });
-        }
+        const serverError = error.response.data?.detail || "Ошибка сервера. Попробуйте позже.";
+        setErrors({ server: serverError });
       } else {
         setErrors({ server: "Ошибка сети. Попробуйте позже." });
       }
@@ -94,6 +110,7 @@ const Register = () => {
               value={formData.fullName}
               onChange={handleInputChange}
             />
+            {errors.fullName && <div className="error-message">{errors.fullName}</div>}
           </div>
           <div>
             <input

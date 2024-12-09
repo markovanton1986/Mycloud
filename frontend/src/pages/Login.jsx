@@ -10,18 +10,28 @@ const Login = () => {
     const [message, setMessage] = useState("");
     const navigate = useNavigate();
 
+    const validateForm = () => {
+        if (!formData.username || !formData.password) {
+            setError("Пожалуйста, заполните все поля.");
+            return false;
+        }
+        setError("");
+        return true;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-        setError(""); // Сброс ошибки
+        if (!validateForm()) return;
 
+        setLoading(true);
+        setError("");
         try {
             const response = await axios.post(
                 "http://localhost:8000/api/login/",
                 formData,
                 {
                     headers: { "Content-Type": "application/json" },
-                    withCredentials: true,  // Отправка с cookies
+                    withCredentials: true,
                 }
             );
 
@@ -33,28 +43,32 @@ const Login = () => {
             // Переход на соответствующую страницу
             if (response.data.is_staff) {
                 console.log("Redirecting to admin...");
-                navigate("/admin");
+                navigate("/Admin");
             } else {
                 console.log("Redirecting to UserPage...");
                 navigate("/UserPage");
             }
         } catch (error) {
             console.error("Ошибка входа:", error);
-            setError("Ошибка входа, проверьте логин и пароль.");
+            if (error.response) {
+                setError(error.response.data.detail || "Ошибка входа, проверьте логин и пароль.");
+            } else {
+                setError("Ошибка сети. Попробуйте позже.");
+            }
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div style={{ textAlign: "center", padding: "20px" }}>
+        <div className="login-container">
             <h2>Вход</h2>
 
             {/* Отображение сообщений об успехе или ошибке */}
-            {message && <div style={{ color: "green" }}>{message}</div>}
-            {error && <div style={{ color: "red" }}>{error}</div>}
+            {message && <div className="message success">{message}</div>}
+            {error && <div className="message error">{error}</div>}
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="login-form">
                 <div>
                     <input
                         type="text"
@@ -63,6 +77,7 @@ const Login = () => {
                         onChange={(e) =>
                             setFormData({ ...formData, username: e.target.value })
                         }
+                        className="input-field"
                     />
                 </div>
                 <div>
@@ -73,9 +88,10 @@ const Login = () => {
                         onChange={(e) =>
                             setFormData({ ...formData, password: e.target.value })
                         }
+                        className="input-field"
                     />
                 </div>
-                <button type="submit" disabled={loading}>
+                <button type="submit" className="submit-button" disabled={loading}>
                     {loading ? "Загрузка..." : "Войти"}
                 </button>
             </form>

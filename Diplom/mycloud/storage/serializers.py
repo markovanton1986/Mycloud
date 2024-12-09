@@ -10,21 +10,25 @@ User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'email', 'password', 'fullname']
 
     def create(self, validated_data):
+        fullname = validated_data.pop('fullname', None)  # Извлекаем fullname, если оно есть
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password']
         )
+        if fullname:
+            user.fullname = fullname  # Сохраняем fullname
+            user.save()  # Обновляем пользователя в базе данных
         return user
 
 # Сериализатор для пользователя
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'is_staff']  # `is_staff` для проверки прав администратора
+        fields = ['id', 'username', 'email', 'is_staff', 'fullname']
 
 
 # Сериализатор для файла
@@ -51,5 +55,3 @@ class CustomUserSerializer(serializers.ModelSerializer):
         instance.is_staff = validated_data.get('is_staff', instance.is_staff)
         instance.save()
         return instance
-
-

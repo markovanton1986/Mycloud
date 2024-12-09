@@ -24,7 +24,7 @@ function UserPage() {
 
   // Функция для обновления токена
   const refreshAccessToken = async () => {
-    const refreshToken = getTokenFromCookies();  // Получаем токен из cookies
+    const refreshToken = getTokenFromCookies();
     if (!refreshToken) {
       console.error('Refresh token не найден');
       return null;
@@ -33,7 +33,7 @@ function UserPage() {
     try {
       const response = await axios.post('http://localhost:8000/api/token/refresh/', {
         refresh: refreshToken
-      }, { withCredentials: true });  // Отправляем запрос с cookies
+      }, { withCredentials: true });
 
       const newAccessToken = response.data.access;
       document.cookie = `access_token=${newAccessToken};path=/;`;
@@ -56,7 +56,7 @@ function UserPage() {
       try {
         const response = await axios.get('http://localhost:8000/api/files/', {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,  // Разрешаем отправку cookies
+          withCredentials: true,
         });
         console.log('Received files:', response.data);
         setFiles(response.data.files || []);
@@ -65,7 +65,7 @@ function UserPage() {
       }
     };
 
-    fetchFiles();  // Инициализируем загрузку файлов
+    fetchFiles();
   }, []);
 
   // Загрузка файлов
@@ -81,7 +81,6 @@ function UserPage() {
     formData.append('file', selectedFile);
     formData.append('comment', comment);
   
-    // Получаем CSRF токен из cookies (если используется CSRF защита)
     const csrfToken = document.cookie
       .split('; ')
       .find(row => row.startsWith('csrftoken='))
@@ -92,13 +91,13 @@ function UserPage() {
       await axios.post('http://localhost:8000/api/files/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'X-CSRFToken': csrfToken,  // Добавляем CSRF токен в заголовок
+          'X-CSRFToken': csrfToken,
         },
-        withCredentials: true,  // Отправляем cookies
+        withCredentials: true,
       });
       setUploadStatus('success');
       alert('Файл успешно загружен!');
-      fetchFiles();  // Загружаем файлы после загрузки
+      fetchFiles();
     } catch (error) {
       setUploadStatus('error');
       console.error('Ошибка при загрузке файла:', error);
@@ -111,10 +110,10 @@ function UserPage() {
         const token = getTokenFromCookies();
         await axios.delete(`http://localhost:8000/api/files/${fileId}/`, {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,  // Разрешаем отправку cookies
+          withCredentials: true,
         });
         alert('Файл успешно удалён.');
-        fetchFiles();  // Загружаем файлы после удаления
+        fetchFiles();
       } catch (error) {
         console.error('Ошибка при удалении файла:', error);
         alert('Не удалось удалить файл.');
@@ -129,10 +128,10 @@ function UserPage() {
         const token = getTokenFromCookies();
         await axios.put(`http://localhost:8000/api/files/${fileId}/`, { comment: newComment }, {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,  // Разрешаем отправку cookies
+          withCredentials: true,
         });
         alert('Комментарий успешно обновлён.');
-        fetchFiles();  // Загружаем файлы после изменения комментария
+        fetchFiles();
       } catch (error) {
         console.error('Ошибка при обновлении комментария:', error);
         alert('Не удалось обновить комментарий.');

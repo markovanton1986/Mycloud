@@ -2,25 +2,25 @@ from datetime import timedelta, timezone
 from django.contrib.auth import authenticate, get_user_model
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from django.http import JsonResponse
-from .models import File
-from .serializers import FileSerializer, UserSerializer
-import json
-from rest_framework.permissions import IsAdminUser
+from .models import File, CustomUser
+from .serializers import FileSerializer, UserSerializer, CustomUserSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .models import CustomUser
-from .serializers import CustomUserSerializer
+import json
+import re
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
+
 # Регистрация пользователя
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
-    data = json.loads(request.body)  # Получаем данные из запроса
-    print("Received data:", data)  # Добавляем логирование
+    data = json.loads(request.body)
+    print("Received data:", data)
 
     username = data.get('username')
     email = data.get('email')
@@ -28,33 +28,37 @@ def register_user(request):
 
     # Проверка обязательных полей
     if not username or not email or not password:
-        print("Error: Missing fields")  # Логируем ошибку
+        print("Error: Missing fields")
         return JsonResponse({'error': 'Все поля обязательны.'}, status=400)
 
+    # Валидация email
+    if not validate_email(email):
+        return JsonResponse({'error': 'Неверный формат email.'}, status=400)
+
+    # Валидация пароля
+    try:
+        validate_password(password)
+    except ValidationError as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
     if User.objects.filter(username=username).exists():
-        print("Error: Username already exists")  # Логируем ошибку
+        print("Error: Username already exists")
         return JsonResponse({'error': 'Пользователь с таким username уже существует.'}, status=400)
 
     if User.objects.filter(email=email).exists():
-        print("Error: Email already exists")  # Логируем ошибку
+        print("Error: Email already exists")
         return JsonResponse({'error': 'Пользователь с таким email уже существует.'}, status=400)
 
     # Создание пользователя
     user = User.objects.create_user(username=username, email=email, password=password)
-    print("User created successfully:", user)  # Логируем успешную регистрацию
-
-    # user.groups.add(Group.objects.get(name='some_group'))  # Здесь добавляем в нужную группу
-    # user.is_staff = True  # Если хотите сделать пользователя администратором
-    # user.save()
+    print("User created successfully:", user)
 
     return JsonResponse({'message': 'Пользователь успешно зарегистрирован.'}, status=201)
 
 
 # Вход пользователя
-
-
 @api_view(['POST'])
-@permission_classes([AllowAny])  # Разрешить доступ всем пользователям
+@permission_classes([AllowAny])
 def login_user(request):
     username = request.data.get("username")
     password = request.data.get("password")
@@ -73,8 +77,8 @@ def login_user(request):
             "refresh": refresh_token_str,
         })
 
-        response.set_cookie("access_token", access_token, httponly=True, secure=False, samesite='Lax')
-        response.set_cookie("refresh_token", refresh_token_str, httponly=True, secure=False, samesite='Lax')
+        response.set_cookie('access_token', access_token, httponly=True, secure=True, samesite='Strict')
+        response.set_cookie('refresh_token', refresh_token, httponly=True, secure=True, samesite='Strict')
 
         return response
 
@@ -109,11 +113,23 @@ def list_files(request):
 
 
 # Загрузка файла
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+
+def validate_file_size(file):
+    if file.size > MAX_FILE_SIZE:
+        raise ValidationError("Размер файла не должен превышать 10 MB.")
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def upload_file(request):
     file = request.FILES['file']
     comment = request.POST.get('comment', '')
+
+    try:
+        validate_file_size(file)
+    except ValidationError as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
     File.objects.create(user=request.user, file=file, comment=comment)
     return JsonResponse({'message': 'Файл успешно загружен.'})
 
@@ -184,24 +200,22 @@ def list_users(request):
     return Response(serializer.data)
 
 @api_view(['DELETE'])
-@permission_classes([IsAdminUser])  # Ограничиваем доступ только администраторам
+@permission_classes([IsAdminUser])
 def delete_user(request, user_id):
     try:
-        # Получаем пользователя по ID
         user = CustomUser.objects.get(id=user_id)
 
         # Дополнительная проверка (например, для запрета удалять самого себя)
         if request.user == user:
             return Response({'error': 'Вы не можете удалить себя.'}, status=403)
 
-        # Удаляем пользователя
-        user.delete()
+        # Удаление всех файлов пользователя, если это необходимо
+        File.objects.filter(user=user).delete()
 
-        # Возвращаем успешный ответ
+        user.delete()
         return Response({'message': 'Пользователь успешно удалён.'}, status=200)
 
     except CustomUser.DoesNotExist:
-        # Если пользователь не найден, возвращаем ошибку
         return Response({'error': 'Пользователь не найден.'}, status=404)
 
 
@@ -210,3 +224,20 @@ def get_user_info(request):
     user = request.user  # Получаем текущего авторизованного пользователя
     serializer = UserSerializer(user)
     return Response(serializer.data)
+
+
+# Валидация email
+def validate_email(email):
+    email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    if not re.match(email_regex, email):
+        return False
+    return True
+
+# Валидация пароля
+def validate_password(password):
+    if len(password) < 8:
+        raise ValidationError("Пароль должен содержать хотя бы 8 символов.")
+    if not any(char.isdigit() for char in password):
+        raise ValidationError("Пароль должен содержать хотя бы одну цифру.")
+    if not any(char.isalpha() for char in password):
+        raise ValidationError("Пароль должен содержать хотя бы одну букву.")
