@@ -1,8 +1,13 @@
+import uuid
+from datetime import timezone
+
 from django.core.exceptions import PermissionDenied
 
 import hashlib
 from django.http import FileResponse
+from django.shortcuts import get_object_or_404
 
+from mycloud.storage.models import File
 
 
 def has_access_to_storage(request, user):

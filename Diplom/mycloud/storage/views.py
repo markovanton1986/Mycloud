@@ -57,32 +57,42 @@ def register_user(request):
 
 
 # Вход пользователя
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def login_user(request):
     username = request.data.get("username")
     password = request.data.get("password")
 
-    # Аутентификация пользователя
     user = authenticate(username=username, password=password)
     if user:
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
-        refresh_token_str = str(refresh)
+        refresh_token = str(refresh)
 
-        # Сохраняем токены в cookies
-        response = Response({
+        response = JsonResponse({
             "message": "Вход выполнен успешно",
             "access": access_token,
-            "refresh": refresh_token_str,
+            "refresh": refresh_token,
+            "is_staff": user.is_staff,
         })
 
-        response.set_cookie('access_token', access_token, httponly=True, secure=True, samesite='Strict')
-        response.set_cookie('refresh_token', refresh_token, httponly=True, secure=True, samesite='Strict')
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=False,
+            samesite='Lax'
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=False,
+            samesite='Lax'
+        )
 
         return response
-
-    return Response({"error": "Неправильный логин или пароль"}, status=400)
+    return JsonResponse({"error": "Неправильный логин или пароль"}, status=400)
 
 
 # Выход пользователя
@@ -186,7 +196,11 @@ def refresh_token(request):
     try:
         refresh = RefreshToken(refresh_token)
         access_token = str(refresh.access_token)
-        return JsonResponse({'access': access_token})
+
+        # Отправка только нового access token в response с cookies
+        response = JsonResponse({'access': access_token})
+        response.set_cookie('access_token', access_token, httponly=True, secure=True, samesite='Strict')
+        return response
     except Exception as e:
         return JsonResponse({'error': 'Invalid refresh token'}, status=400)
 

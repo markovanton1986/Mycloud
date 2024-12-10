@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -24,8 +23,6 @@ SECRET_KEY = 'django-insecure-#m_u+@oivbwvd8mro)3rvpmi2)382zhj31-7t$q9xo85z=k)lt
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-
 
 # Application definition
 
@@ -46,9 +43,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -75,7 +72,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mycloud.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -89,7 +85,6 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -109,7 +104,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -120,7 +114,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -137,7 +130,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 AUTH_USER_MODEL = 'storage.CustomUser'
 
@@ -156,17 +148,12 @@ REST_FRAMEWORK = {
 BASE_STORAGE_PATH = BASE_DIR / 'storage'
 INTERNAL_IPS = ['127.0.0.1']
 
-
-
-
-
 # Настройки CORS
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_ORIGINS = [
     "http://localhost:3000",  # Ваш React-клиент
 ]
 
-CORS_ALLOW_CREDENTIALS = True  # Разрешает использовать cookies
 CORS_ALLOW_HEADERS = [
     'Content-Type',
     'Authorization',
@@ -186,10 +173,8 @@ CORS_ALLOW_METHODS = [
 # Настройки для обработки сессий и CSRF
 SESSION_COOKIE_AGE = 3600  # Время жизни cookie-сессии (1 час)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SECURE = False  # Используйте True, если у вас HTTPS
+
 CSRF_COOKIE_NAME = "csrftoken"  # Название cookie с CSRF токеном
-CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']  # Разрешаем доступ с вашего фронтенда
 
 # Настройки для JWT
 SIMPLE_JWT = {
@@ -208,5 +193,26 @@ SIMPLE_JWT = {
 # Прочее
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
+# Настройки cookies
+SESSION_COOKIE_SECURE = False  # Установите True для HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Запрет доступа к cookies через JS
+SESSION_COOKIE_SAMESITE = 'Lax'  # Или 'None' для кросс-доменных запросов
 
+# CSRF-настройки
+CSRF_COOKIE_SECURE = False  # Установите True для HTTPS
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
 
+# CORS-настройки
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]

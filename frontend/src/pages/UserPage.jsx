@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './UserPage.css';
 
@@ -7,26 +7,22 @@ function UserPage() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [comment, setComment] = useState('');
   const [uploadStatus, setUploadStatus] = useState(null);
+  const [loadingFiles, setLoadingFiles] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Функция для получения токена из cookies
+
+  // Получение токена из cookies
   const getTokenFromCookies = () => {
     const cookies = document.cookie.split('; ');
     const accessToken = cookies.find(cookie => cookie.startsWith('access_token='));
-    const refreshToken = cookies.find(cookie => cookie.startsWith('refresh_token='));
-    
-    // Для дебага
-    console.log('Access Token:', accessToken);
-    console.log('Refresh Token:', refreshToken);
-    
     return accessToken ? accessToken.split('=')[1] : null;
   };
 
-  // Функция для обновления токена
+  // Обновление токена
   const refreshAccessToken = async () => {
     const refreshToken = getTokenFromCookies();
     if (!refreshToken) {
-      console.error('Refresh token не найден');
+      console.error("Refresh token отсутствует");
       return null;
     }
 
@@ -39,107 +35,141 @@ function UserPage() {
       document.cookie = `access_token=${newAccessToken};path=/;`;
       return newAccessToken;
     } catch (error) {
-      console.error('Ошибка при обновлении токена:', error);
+      console.error("Ошибка обновления токена:", error);
       return null;
     }
   };
 
-  // Запрос на получение файлов
-  useEffect(() => {
-    const fetchFiles = async () => {
-      const token = getTokenFromCookies();
-      if (!token) {
-        console.error('Токен не найден');
-        return;
-      }
-
-      try {
-        const response = await axios.get('http://localhost:8000/api/files/', {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        });
-        console.log('Received files:', response.data);
-        setFiles(response.data.files || []);
-      } catch (error) {
-        console.error('Ошибка при получении файлов:', error);
-      }
-    };
-
-    fetchFiles();
-  }, []);
-
-  // Загрузка файлов
-  const handleUpload = async (e) => {
-    e.preventDefault();
-    
-    if (!selectedFile) {
-      alert('Выберите файл для загрузки.');
+  // Обёртка для защищённых запросов
+  const authorizedRequest = async (config) => {
+    const token = getTokenFromCookies();
+    if (!token) {
+      console.error("Токен отсутствует. Перенаправление на страницу входа...");
+      window.location.href = "/login";
       return;
     }
-  
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('comment', comment);
-  
-    const csrfToken = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('csrftoken='))
-      ?.split('=')[1];
-  
+
     try {
-      setUploadStatus('uploading');
-      await axios.post('http://localhost:8000/api/files/upload/', formData, {
+      const response = await axios({
+        ...config,
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'X-CSRFToken': csrfToken,
+          ...config.headers,
+          Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
       });
-      setUploadStatus('success');
-      alert('Файл успешно загружен!');
-      fetchFiles();
+      return response;
     } catch (error) {
-      setUploadStatus('error');
-      console.error('Ошибка при загрузке файла:', error);
+      if (error.response?.status === 401) {
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          return axios({
+            ...config,
+            headers: {
+              ...config.headers,
+              Authorization: `Bearer ${newToken}`,
+            },
+            withCredentials: true,
+          });
+        }
+      }
+      throw error;
     }
   };
 
+  // Получение списка файлов
+  const fetchFiles = async () => {
+    setLoadingFiles(true);
+    try {
+      const response = await authorizedRequest({
+        method: "GET",
+        url: "http://localhost:8000/api/files/",
+      });
+      setFiles(response.data.files || []);
+    } catch (error) {
+      console.error("Ошибка получения файлов:", error);
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFiles();
+  }, [uploadStatus]);
+
+  // Обработчик загрузки файлов
+  const handleUpload = async (e) => {
+    e.preventDefault();
+
+    if (!selectedFile) {
+      alert("Выберите файл.");
+      return;
+    }
+
+    setIsLoading(true);
+    setUploadStatus(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("comment", comment);
+
+      await authorizedRequest({
+        method: "POST",
+        url: "http://localhost:8000/api/files/upload/",
+        data: formData,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setUploadStatus("success");
+      alert("Файл успешно загружен!");
+      setSelectedFile(null);
+      setComment('');
+    } catch (error) {
+      setUploadStatus("error");
+      console.error("Ошибка загрузки файла:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Удаление файла
   const handleDelete = async (fileId) => {
-    if (window.confirm('Вы уверены, что хотите удалить этот файл?')) {
+    if (window.confirm("Вы уверены, что хотите удалить этот файл?")) {
       try {
-        const token = getTokenFromCookies();
-        await axios.delete(`http://localhost:8000/api/files/${fileId}/`, {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
+        await authorizedRequest({
+          method: "DELETE",
+          url: `http://localhost:8000/api/files/${fileId}/`,
         });
-        alert('Файл успешно удалён.');
+        alert("Файл успешно удалён.");
         fetchFiles();
       } catch (error) {
-        console.error('Ошибка при удалении файла:', error);
-        alert('Не удалось удалить файл.');
+        console.error("Ошибка удаления файла:", error);
+        alert("Не удалось удалить файл.");
       }
     }
   };
 
-  const handleRename = async (fileId, newName) => {
-    const newComment = prompt('Введите новый комментарий:', newName);
-    if (newComment && newComment !== newName) {
+  // Обновление комментария
+  const handleRename = async (fileId, oldComment) => {
+    const newComment = prompt("Введите новый комментарий:", oldComment);
+    if (newComment && newComment !== oldComment) {
       try {
-        const token = getTokenFromCookies();
-        await axios.put(`http://localhost:8000/api/files/${fileId}/`, { comment: newComment }, {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
+        await authorizedRequest({
+          method: "PUT",
+          url: `http://localhost:8000/api/files/${fileId}/`,
+          data: { comment: newComment },
         });
-        alert('Комментарий успешно обновлён.');
+        alert("Комментарий обновлён.");
         fetchFiles();
       } catch (error) {
-        console.error('Ошибка при обновлении комментария:', error);
-        alert('Не удалось обновить комментарий.');
+        console.error("Ошибка обновления комментария:", error);
+        alert("Не удалось обновить комментарий.");
       }
     }
   };
 
-  const handleViewFile = (fileUrl) => window.open(fileUrl, '_blank');
+  const handleViewFile = (fileUrl) => window.open(fileUrl, "_blank");
 
   const formatFileSize = (size) => {
     if (size < 1024) return `${size} B`;
@@ -150,33 +180,34 @@ function UserPage() {
   return (
     <div className="user-page-container">
       <h2>Мои файлы</h2>
+
       <form onSubmit={handleUpload} className="upload-form">
         <div className="form-group">
-          <label htmlFor="file">Выберите файл:</label>
-          <input type="file" id="file" onChange={(e) => setSelectedFile(e.target.files[0])} required />
+          <label>Выберите файл:</label>
+          <input type="file" onChange={(e) => setSelectedFile(e.target.files[0])} required />
         </div>
         <div className="form-group">
-          <label htmlFor="comment">Комментарий:</label>
+          <label>Комментарий:</label>
           <input
             type="text"
-            id="comment"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Введите комментарий к файлу"
+            placeholder="Введите комментарий"
           />
         </div>
-        <button type="submit" className="upload-button">Загрузить</button>
+        <button type="submit" disabled={isLoading} className="upload-button">
+          {isLoading ? "Загрузка..." : "Загрузить"}
+        </button>
       </form>
 
-      {uploadStatus === 'uploading' && <p>Загрузка файла...</p>}
-      {uploadStatus === 'success' && <p className="success-message">Файл успешно загружен!</p>}
-      {uploadStatus === 'error' && <p className="error-message">Ошибка при загрузке файла.</p>}
+      {uploadStatus === "success" && <p className="success-message">Файл успешно загружен!</p>}
+      {uploadStatus === "error" && <p className="error-message">Ошибка загрузки файла.</p>}
 
       <h3>Список файлов</h3>
-      {isLoading ? (
+      {loadingFiles ? (
         <p>Загрузка...</p>
       ) : files.length === 0 ? (
-        <p>У вас нет загруженных файлов.</p>
+        <p>Нет загруженных файлов.</p>
       ) : (
         <table>
           <thead>

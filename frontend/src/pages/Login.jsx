@@ -1,102 +1,85 @@
-import React, { useState } from "react"; 
-import axios from "axios";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./Login.css";
 
 const Login = () => {
-    const [formData, setFormData] = useState({ username: "", password: "" });
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState("");
-    const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-    const validateForm = () => {
-        if (!formData.username || !formData.password) {
-            setError("Пожалуйста, заполните все поля.");
-            return false;
-        }
-        setError("");
-        return true;
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!validateForm()) return;
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/login/",
+        { username, password },
+        { withCredentials: true }
+      );
 
-        setLoading(true);
-        setError("");
-        try {
-            const response = await axios.post(
-                "http://localhost:8000/api/login/",
-                formData,
-                {
-                    headers: { "Content-Type": "application/json" },
-                    withCredentials: true,
-                }
-            );
+      console.log("Успешный вход:", response.data);
 
-            console.log("Успешный вход:", response.data);
+      setMessage("Вы успешно вошли в систему!");
 
-            // Токены хранятся в cookies, так что нет нужды в sessionStorage
-            setMessage("Вы успешно вошли в систему!");
+      if (response.data.is_staff) {
+        console.log("Перенаправление на Admin");
+        navigate("/Admin");
+      } else {
+        console.log("Перенаправление на UserPage");
+        navigate("/UserPage");
+      }
+    } catch (error) {
+      console.error("Ошибка входа:", error);
 
-            // Переход на соответствующую страницу
-            if (response.data.is_staff) {
-                console.log("Redirecting to admin...");
-                navigate("/Admin");
-            } else {
-                console.log("Redirecting to UserPage...");
-                navigate("/UserPage");
-            }
-        } catch (error) {
-            console.error("Ошибка входа:", error);
-            if (error.response) {
-                setError(error.response.data.detail || "Ошибка входа, проверьте логин и пароль.");
-            } else {
-                setError("Ошибка сети. Попробуйте позже.");
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
+      setError(
+        error.response?.data?.error || "Ошибка входа, проверьте логин и пароль."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div className="login-container">
-            <h2>Вход</h2>
+  return (
+    <div className="login-container">
+      <h2>Вход</h2>
 
-            {/* Отображение сообщений об успехе или ошибке */}
-            {message && <div className="message success">{message}</div>}
-            {error && <div className="message error">{error}</div>}
+      {/* Отображение сообщений об успехе или ошибке */}
+      {message && <div className="message success">{message}</div>}
+      {error && <div className="message error">{error}</div>}
 
-            <form onSubmit={handleSubmit} className="login-form">
-                <div>
-                    <input
-                        type="text"
-                        placeholder="Логин"
-                        value={formData.username}
-                        onChange={(e) =>
-                            setFormData({ ...formData, username: e.target.value })
-                        }
-                        className="input-field"
-                    />
-                </div>
-                <div>
-                    <input
-                        type="password"
-                        placeholder="Пароль"
-                        value={formData.password}
-                        onChange={(e) =>
-                            setFormData({ ...formData, password: e.target.value })
-                        }
-                        className="input-field"
-                    />
-                </div>
-                <button type="submit" className="submit-button" disabled={loading}>
-                    {loading ? "Загрузка..." : "Войти"}
-                </button>
-            </form>
+      <form onSubmit={handleSubmit} className="login-form">
+        <div>
+          <input
+            type="text"
+            placeholder="Логин"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="input-field"
+            required
+          />
         </div>
-    );
+        <div>
+          <input
+            type="password"
+            placeholder="Пароль"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input-field"
+            required
+          />
+        </div>
+        <button type="submit" className="submit-button" disabled={loading}>
+          {loading ? "Загрузка..." : "Войти"}
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default Login;
