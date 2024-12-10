@@ -255,3 +255,12 @@ def validate_password(password):
         raise ValidationError("Пароль должен содержать хотя бы одну цифру.")
     if not any(char.isalpha() for char in password):
         raise ValidationError("Пароль должен содержать хотя бы одну букву.")
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_info(request):
+    user = request.user  # Получаем текущего авторизованного пользователя
+    serializer = UserSerializer(user)
+    return Response(serializer.data)

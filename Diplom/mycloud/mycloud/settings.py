@@ -25,7 +25,6 @@ SECRET_KEY = 'django-insecure-#m_u+@oivbwvd8mro)3rvpmi2)382zhj31-7t$q9xo85z=k)lt
 DEBUG = True
 
 # Application definition
-
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -73,8 +72,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mycloud.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -87,8 +84,6 @@ DATABASES = {
 }
 
 # Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -104,19 +99,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
-
 USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
@@ -125,9 +113,6 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -140,7 +125,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
@@ -148,9 +132,8 @@ REST_FRAMEWORK = {
 BASE_STORAGE_PATH = BASE_DIR / 'storage'
 INTERNAL_IPS = ['127.0.0.1']
 
-# Настройки CORS
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_ORIGINS = [
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Ваш React-клиент
 ]
 
@@ -159,7 +142,7 @@ CORS_ALLOW_HEADERS = [
     'Authorization',
     'Access-Control-Allow-Origin',
     'Access-Control-Allow-Credentials',
-    'x-csrftoken',  # Нужно для передачи CSRF токена
+    'x-csrftoken',
 ]
 
 CORS_ALLOW_METHODS = [
@@ -167,16 +150,14 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
     'DELETE',
-    'OPTIONS',  # для preflight запросов
+    'OPTIONS',
 ]
 
-# Настройки для обработки сессий и CSRF
 SESSION_COOKIE_AGE = 3600  # Время жизни cookie-сессии (1 час)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-CSRF_COOKIE_NAME = "csrftoken"  # Название cookie с CSRF токеном
+CSRF_COOKIE_NAME = "csrftoken"
 
-# Настройки для JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=300),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -190,24 +171,17 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-# Прочее
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
-# Настройки cookies
-SESSION_COOKIE_SECURE = False  # Установите True для HTTPS
-SESSION_COOKIE_HTTPONLY = True  # Запрет доступа к cookies через JS
-SESSION_COOKIE_SAMESITE = 'Lax'  # Или 'None' для кросс-доменных запросов
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 
-# CSRF-настройки
-CSRF_COOKIE_SECURE = False  # Установите True для HTTPS
+CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-# CORS-настройки
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",

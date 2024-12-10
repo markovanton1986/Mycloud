@@ -2,15 +2,14 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import File
 
-
 # Получаем модель пользователя
 User = get_user_model()
 
-
+# Сериализатор для регистрации пользователя
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'fullname']
+        fields = ['username', 'email', 'password', 'fullname']  # Поля для регистрации пользователя
 
     def create(self, validated_data):
         fullname = validated_data.pop('fullname', None)  # Извлекаем fullname, если оно есть
@@ -24,28 +23,36 @@ class RegisterSerializer(serializers.ModelSerializer):
             user.save()  # Обновляем пользователя в базе данных
         return user
 
-# Сериализатор для пользователя
+# Сериализатор для пользователя (для отображения данных)
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'is_staff', 'fullname']
 
-
-# Сериализатор для файла
+# Сериализатор для файлов
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ['id', 'name', 'size', 'uploaded_at', 'file', 'comment']
+        fields = ['id', 'name', 'size', 'uploaded_at', 'file', 'comment']  # Поля для работы с файлами
 
+    # Добавляем валидацию для поля file, чтобы проверять размер и тип файла
+    def validate_file(self, value):
+        # Ограничиваем размер файла 10 MB
+        if value.size > 10 * 1024 * 1024:  # 10 MB max
+            raise serializers.ValidationError("Файл слишком большой. Максимальный размер: 10 МБ.")
+        # Ограничиваем типы файлов
+        if not value.name.lower().endswith(('.jpg', '.png', '.pdf', '.docx', '.xlsx')):
+            raise serializers.ValidationError("Неверный формат файла. Разрешены только изображения и документы.")
+        return value
 
-# Пример кастомного сериализатора пользователя (если вам нужно дополнительно обрабатывать данные)
+# Дополнительный кастомный сериализатор для пользователя (если потребуется для более сложной логики)
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'is_staff']  # `is_staff` или `is_admin` для ролей администратора
+        fields = ['id', 'username', 'email', 'is_staff']  # Например, `is_staff` для ролей администратора
 
     def create(self, validated_data):
-        # Здесь можно реализовать дополнительную логику для создания пользователя
+        # Дополнительная логика для создания пользователя
         return User.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
