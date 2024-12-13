@@ -1,4 +1,6 @@
 from datetime import timedelta, timezone
+from venv import logger
+
 from django.contrib.auth import authenticate, get_user_model
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -79,14 +81,14 @@ def login_user(request):
         response.set_cookie(
             key="access_token",
             value=access_token,
-            httponly=True,
+            httponly=False,
             secure=False,
             samesite='Lax'
         )
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
-            httponly=True,
+            httponly=False,
             secure=False,
             samesite='Lax'
         )
@@ -110,15 +112,11 @@ def logout_user(request):
 def list_files(request):
     try:
         files = File.objects.filter(user=request.user)
-
-        if not files.exists():
-            return JsonResponse({'message': 'У вас нет загруженных файлов.'}, status=404)
-
         serializer = FileSerializer(files, many=True)
         return JsonResponse({'files': serializer.data}, status=200)
 
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error fetching files: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'Произошла ошибка при получении файлов.'}, status=500)
 
 
@@ -140,7 +138,7 @@ def upload_file(request):
     except ValidationError as e:
         return JsonResponse({'error': str(e)}, status=400)
 
-    File.objects.create(user=request.user, file=file, comment=comment)
+    File.objects.create(user=request.user, file=file, comment=comment, size=file.size)
     return JsonResponse({'message': 'Файл успешно загружен.'})
 
 
@@ -264,3 +262,5 @@ def get_user_info(request):
     user = request.user  # Получаем текущего авторизованного пользователя
     serializer = UserSerializer(user)
     return Response(serializer.data)
+
+

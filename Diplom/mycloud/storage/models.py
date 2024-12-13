@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
@@ -40,13 +41,13 @@ class File(models.Model):
     file = models.FileField(upload_to='files/')  # Путь к файлу
     uploaded_at = models.DateTimeField(auto_now_add=True)
     size = models.PositiveIntegerField()  # Размер файла в байтах
-    upload_date = models.DateTimeField(auto_now_add=True)  # Дата загрузки
+    upload_date = models.DateTimeField(default=timezone.now)  # Дата загрузки
     last_downloaded = models.DateTimeField(null=True, blank=True)  # Дата последнего скачивания
     comment = models.TextField(null=True, blank=True)  # Комментарий к файлу
     public_link = models.URLField(null=True, blank=True)  # Специальная ссылка для внешнего доступа
 
     def __str__(self):
-        return self.original_name
+        return self.file.name
 
     def save(self, *args, **kwargs):
         if not self.public_link:

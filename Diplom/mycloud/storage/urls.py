@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import register_user
 
 
+
 urlpatterns = [
     # Аутентификация и регистрация
     path('register/', register_user, name='register_user'),
@@ -18,6 +19,7 @@ urlpatterns = [
     path('admin/users/<int:user_id>/delete/', views.delete_user, name='delete_user'),
 
     # Файловое хранилище
+
     path('files/', views.list_files, name='list_files'),
     path('files/upload/', views.upload_file, name='upload_file'),
     path('files/<int:file_id>/delete/', views.delete_file, name='delete_file'),
