@@ -9,7 +9,8 @@ function UserPage() {
   const [uploadStatus, setUploadStatus] = useState(null);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [editingFileId, setEditingFileId] = useState(null); // ID файла, комментарий которого редактируется
+  const [newComment, setNewComment] = useState(''); // Новый комментарий для редактирования
 
   // Получение токена из cookies
   const getTokenFromCookies = () => {
@@ -137,12 +138,13 @@ function UserPage() {
   const handleDelete = async (fileId) => {
     if (window.confirm("Вы уверены, что хотите удалить этот файл?")) {
       try {
-        await authorizedRequest({
-          method: "DELETE",
-          url: `http://localhost:8000/api/files/${fileId}/`,
+        await axios.delete(`http://localhost:8000/api/files/${fileId}/delete/`, {
+          headers: {
+            Authorization: `Bearer ${getTokenFromCookies()}`,
+          },
         });
         alert("Файл успешно удалён.");
-        fetchFiles();
+        fetchFiles(); // Обновление списка файлов
       } catch (error) {
         console.error("Ошибка удаления файла:", error);
         alert("Не удалось удалить файл.");
@@ -151,30 +153,80 @@ function UserPage() {
   };
 
   // Обновление комментария
-  const handleRename = async (fileId, oldComment) => {
-    const newComment = prompt("Введите новый комментарий:", oldComment);
-    if (newComment && newComment !== oldComment) {
+  const handleUpdateComment = async (fileId) => {
+    if (!newComment) {
+      alert("Комментарий не может быть пустым.");
+      return;
+    }
+  
+    const updatedFiles = files.map((file) =>
+      file.id === fileId ? { ...file, comment: newComment } : file
+    );
+    setFiles(updatedFiles); // Немедленно обновите локальное состояние
+  
+    try {
+      await authorizedRequest({
+        method: "PATCH",
+        url: `http://localhost:8000/api/files/${fileId}/comment/`,
+        data: { comment: newComment },
+      });
+      alert("Комментарий обновлён.");
+      setEditingFileId(null);
+      setNewComment("");
+    } catch (error) {
+      console.error("Ошибка обновления комментария:", error);
+      alert("Не удалось обновить комментарий.");
+    }
+  };
+
+  // Просмотр файла
+  const handleViewFile = (fileUrl) => {
+    const fullUrl = `http://localhost:8000${fileUrl}`; // формируем полный URL
+    window.open(fullUrl, "_blank"); // открываем файл в новой вкладке
+  };
+
+  // Переименование файла
+  const handleRenameFile = async (fileId, oldFileName) => {
+    const newFileName = prompt("Введите новое имя файла:", oldFileName);
+    if (newFileName && newFileName !== oldFileName) {
       try {
         await authorizedRequest({
           method: "PUT",
-          url: `http://localhost:8000/api/files/${fileId}/`,
-          data: { comment: newComment },
+          url: `http://localhost:8000/api/files/${fileId}/rename/`,
+          data: { name: newFileName },
         });
-        alert("Комментарий обновлён.");
-        fetchFiles();
+        alert("Имя файла обновлено.");
+        fetchFiles(); // Обновление списка файлов после переименования
       } catch (error) {
-        console.error("Ошибка обновления комментария:", error);
-        alert("Не удалось обновить комментарий.");
+        console.error("Ошибка обновления имени файла:", error);
+        alert("Не удалось обновить имя файла.");
       }
     }
   };
 
-  const handleViewFile = (fileUrl) => window.open(fileUrl, "_blank");
+  // Скачивание файла
+  const handleDownloadFile = (fileUrl) => {
+    const link = document.createElement("a");
+    link.href = `http://localhost:8000${fileUrl}`;  // Преобразуем относительный URL в полный
+    link.download = true;
+    link.click();
+  };
 
   const formatFileSize = (size) => {
     if (size < 1024) return `${size} B`;
     if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
     return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
+  const handleCopyLink = (fileUrl) => {
+    navigator.clipboard.writeText(fileUrl)
+      .then(() => {
+        alert("Ссылка скопирована в буфер обмена!");
+      })
+      .catch((error) => {
+        console.error("Ошибка при копировании ссылки:", error);
+        alert("Не удалось скопировать ссылку.");
+      });
   };
 
   return (
@@ -223,13 +275,29 @@ function UserPage() {
             {files.map((file) => (
               <tr key={file.id}>
                 <td>{file.name}</td>
-                <td>{file.comment}</td>
+                <td>
+                  {editingFileId === file.id ? (
+                    <div>
+                      <input
+                        type="text"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                      />
+                      <button onClick={() => handleUpdateComment(file.id)}>Сохранить комментарий</button>
+                    </div>
+                  ) : (
+                    file.comment
+                  )}
+                </td>
                 <td>{formatFileSize(file.size)}</td>
                 <td>{new Date(file.uploaded_at).toLocaleString()}</td>
                 <td>
-                  <button onClick={() => handleViewFile(file.url)}>Просмотр</button>
-                  <button onClick={() => handleRename(file.id, file.comment)}>Переименовать</button>
+                  <button onClick={() => handleViewFile(file.file)}>Просмотр</button>
+                  <button onClick={() => handleRenameFile(file.id, file.name)}>Переименовать файл</button>
+                  <button onClick={() => setEditingFileId(file.id)}>Редактировать комментарий</button>
+                  <button onClick={() => handleDownloadFile(file.file)}>Скачать</button>
                   <button onClick={() => handleDelete(file.id)}>Удалить</button>
+                  <button onClick={() => handleCopyLink(file.public_link)}>Копировать ссылку</button>
                 </td>
               </tr>
             ))}

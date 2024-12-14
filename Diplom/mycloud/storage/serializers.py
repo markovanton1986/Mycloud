@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import File
+from .models import File, CustomUser
 
 # Получаем модель пользователя
 User = get_user_model()
@@ -47,13 +47,15 @@ class FileSerializer(serializers.ModelSerializer):
 
 # Дополнительный кастомный сериализатор для пользователя (если потребуется для более сложной логики)
 class CustomUserSerializer(serializers.ModelSerializer):
+    fullname = serializers.CharField(source='get_fullname', read_only=True)  # Получаем полное имя пользователя
+
     class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'is_staff']  # Например, `is_staff` для ролей администратора
+        model = CustomUser  # Используем кастомную модель пользователя
+        fields = ['id', 'username', 'fullname', 'email', 'is_staff']  # Указываем нужные поля
 
     def create(self, validated_data):
         # Дополнительная логика для создания пользователя
-        return User.objects.create(**validated_data)
+        return CustomUser.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         # Логика обновления пользователя

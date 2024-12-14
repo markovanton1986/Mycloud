@@ -3,6 +3,7 @@ from venv import logger
 
 from django.contrib.auth import authenticate, get_user_model
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import viewsets, status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from django.http import JsonResponse
@@ -13,6 +14,7 @@ from rest_framework.response import Response
 import json
 import re
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
@@ -138,7 +140,7 @@ def upload_file(request):
     except ValidationError as e:
         return JsonResponse({'error': str(e)}, status=400)
 
-    File.objects.create(user=request.user, file=file, comment=comment, size=file.size)
+    File.objects.create(user=request.user, name=file.name, file=file, comment=comment, size=file.size)
     return JsonResponse({'message': 'Файл успешно загружен.'})
 
 
@@ -263,4 +265,71 @@ def get_user_info(request):
     serializer = UserSerializer(user)
     return Response(serializer.data)
 
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def rename_file(request, file_id):
+    try:
+        file = File.objects.get(id=file_id, user=request.user)
+        new_name = request.data.get('name')
+
+        if new_name:
+            file.name = new_name
+            file.save()
+            return JsonResponse({'message': 'Имя файла успешно обновлено.'})
+        else:
+            return JsonResponse({'error': 'Новое имя не предоставлено.'}, status=400)
+
+    except File.DoesNotExist:
+        return JsonResponse({'error': 'Файл не найден.'}, status=404)
+
+
+class CustomUserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+
+
+
+def file_detail(request, file_id):
+    file = get_object_or_404(File, id=file_id)
+    serializer = FileSerializer(file)
+    return JsonResponse(serializer.data)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_comment(request, file_id):
+    try:
+        file = File.objects.get(id=file_id)
+
+        # Проверка прав на редактирование комментария
+        if file.user != request.user:
+            return Response({'detail': 'У вас нет прав для редактирования комментария этого файла.'},
+                             status=status.HTTP_403_FORBIDDEN)
+
+        # Проверка наличия нового комментария
+        if 'comment' in request.data:
+            new_comment = request.data['comment']
+
+            if not new_comment:
+                return Response({'detail': 'Комментарий не может быть пустым.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Дополнительная проверка на длину комментария
+            if len(new_comment) > 500:
+                return Response({'detail': 'Комментарий не может быть длиннее 500 символов.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            # Обновляем комментарий
+            file.comment = new_comment
+            file.save()
+
+            # Сериализуем данные и возвращаем их в ответе
+            serializer = FileSerializer(file)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        else:
+            return Response({'detail': 'Комментарий не был передан.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    except File.DoesNotExist:
+        return Response({'detail': 'Файл не найден.'}, status=status.HTTP_404_NOT_FOUND)
 

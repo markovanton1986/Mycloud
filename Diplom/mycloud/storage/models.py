@@ -47,11 +47,11 @@ class File(models.Model):
     public_link = models.URLField(null=True, blank=True)  # Специальная ссылка для внешнего доступа
 
     def __str__(self):
-        return self.file.name
+        return self.name
 
     def save(self, *args, **kwargs):
         if not self.public_link:
-            self.public_link = self.generate_public_link()
+            self.public_link = f"http://localhost:8000/media/{self.file.name}"
         super().save(*args, **kwargs)
 
     def generate_public_link(self):

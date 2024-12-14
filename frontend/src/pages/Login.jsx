@@ -11,16 +11,32 @@ const Login = () => {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
+  // Получение CSRF токена из cookies
+  const getCSRFToken = () => {
+    const cookies = document.cookie.split('; ');
+    const csrfCookie = cookies.find(cookie => cookie.startsWith('csrftoken='));
+    return csrfCookie ? csrfCookie.split('=')[1] : null;
+  };
+
+  // Обработка отправки формы
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setMessage("");  // Очищаем сообщение перед отправкой
+
+    const csrfToken = getCSRFToken(); // Получаем CSRF токен
 
     try {
       const response = await axios.post(
         "http://localhost:8000/api/login/",
         { username, password },
-        { withCredentials: true }
+        {
+          withCredentials: true,
+          headers: {
+            "X-CSRFToken": csrfToken,  // Передаем CSRF токен
+          }
+        }
       );
 
       console.log("Успешный вход:", response.data);
@@ -36,7 +52,6 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Ошибка входа:", error);
-
       setError(
         error.response?.data?.error || "Ошибка входа, проверьте логин и пароль."
       );

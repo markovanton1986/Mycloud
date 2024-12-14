@@ -3,7 +3,7 @@ from .models import CustomUser, File
 
 
 class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'full_name', 'is_admin', 'email')
+    list_display = ('username', 'fullname', 'is_admin', 'email')
     search_fields = ('username', 'email')
     list_filter = ('is_staff',)
 

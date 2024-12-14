@@ -25,4 +25,7 @@ urlpatterns = [
     path('files/<int:file_id>/delete/', views.delete_file, name='delete_file'),
     path('files/<int:file_id>/download/', views.download_file, name='download_file'),
     path('files/<int:file_id>/link/', views.generate_file_link, name='generate_file_link'),
+    path('files/<int:file_id>/rename/', views.rename_file, name='rename_file'),
+    path('files/<int:file_id>/', views.file_detail, name='file_detail'),
+    path('files/<int:file_id>/comment/', views.update_comment, name='update_comment'),
 ]

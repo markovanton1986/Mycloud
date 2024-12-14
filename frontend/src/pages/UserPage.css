@@ -1,98 +1,173 @@
+/* Общие стили */
 .user-page-container {
-    padding: 20px;
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 20px;
     font-family: Arial, sans-serif;
-}
-
-h2, h3 {
-    text-align: center;
+  }
+  
+  h2, h3 {
     color: #333;
-}
-
-.upload-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.upload-form .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.upload-button {
-    padding: 10px;
-    background-color: #007bff;
+  }
+  
+  /* Центрирование заголовка "Список файлов" */
+  h3 {
+    text-align: center;  /* Центрирует заголовок */
+    margin-top: 30px;
+  }
+  
+  /* Форма загрузки */
+  .upload-form {
+    margin-bottom: 30px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  input[type="file"],
+  input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+  }
+  
+  button {
+    padding: 10px 15px;
+    background-color: #007bff; /* Голубой цвет по умолчанию */
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.upload-button:hover {
+  }
+  
+  button:disabled {
+    background-color: #ccc;
+  }
+  
+  button:hover {
     background-color: #0056b3;
-}
-
-.success-message {
-    color: #28a745;
-    font-weight: bold;
-    text-align: center;
-}
-
-.error-message {
-    color: red;
-    font-weight: bold;
-    text-align: center;
-}
-
-.file-list table {
+  }
+  
+  /* Кнопки для "Загрузить" и "Копировать ссылку" */
+  .upload-button,
+  .copy-link-button {
+    background-color: #007bff; /* Голубой цвет */
+  }
+  
+  .upload-button:hover,
+  .copy-link-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .upload-button:disabled,
+  .copy-link-button:disabled {
+    background-color: #ccc;
+  }
+  
+  .success-message,
+  .error-message {
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+  }
+  
+  .success-message {
+    background-color: #28a745;
+  }
+  
+  .error-message {
+    background-color: #dc3545;
+  }
+  
+  /* Стили таблицы */
+  table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #007bff;
 }
-
-.file-list th, .file-list td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-}
-
-.file-list th {
+  
+  th {
     background-color: #f4f4f4;
-    font-weight: bold;
-}
-
-.file-list tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.file-list button {
-    margin: 0 5px;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-}
-
-.file-list button:hover {
-    opacity: 0.8;
-}
-
-.file-list button:nth-child(1) {
+    border: 2px solid #007bff; /* Зеленая рамка для заголовков */
+  }
+  
+  td {
+    background-color: #fff;
+    border: 2px solid #007bff; /* Зеленая рамка для ячеек */
+  }
+  
+  td button {
+    margin-right: 5px;
+    padding: 8px;
+    background-color: #17a2b8;
+  }
+  
+  td button:hover {
+    background-color: #138496;
+  }
+  
+  td button:last-child {
+    background-color: #28a745;
+  }
+  
+  td button:last-child:hover {
+    background-color: #218838;
+  }
+  
+  td input[type="text"] {
+    padding: 5px;
+    width: 80%;
+    margin-right: 10px;
+  }
+  
+  /* Стиль для загрузки файлов */
+  .upload-button {
     background-color: #007bff;
+    padding: 10px 15px;
     color: white;
-}
-
-.file-list button:nth-child(2) {
-    background-color: #ffc107;
-    color: black;
-}
-
-.file-list button:nth-child(3) {
-    background-color: #dc3545;
-    color: white;
-}
+    cursor: pointer;
+  }
+  
+  .upload-button:disabled {
+    background-color: #ccc;
+  }
+  
+  /* Для мобильных устройств */
+  @media (max-width: 768px) {
+    .user-page-container {
+      padding: 10px;
+    }
+  
+    .upload-form {
+      padding: 15px;
+    }
+  
+    table {
+      font-size: 14px;
+    }
+  
+    td button {
+      padding: 6px;
+    }
+  }

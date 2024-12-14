@@ -1,49 +1,166 @@
+/* Основные стили для админки */
+
 .admin-container {
-    padding: 20px;
-  }
-  
-  .admin-title {
-    font-size: 2rem;
-    margin-bottom: 20px;
-  }
-  
-  .admin-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .admin-table th, .admin-table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-  }
-  
-  .admin-table th {
-    background-color: #f4f4f4;
-  }
-  
-  .admin-table td {
-    vertical-align: middle;
-  }
-  
-  .admin-actions {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .admin-actions button {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .admin-actions button:hover {
-    background-color: #ddd;
-  }
-  
-  .admin-error {
-    color: red;
-    font-weight: bold;
-  }
+  width: 80%;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2, h3 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+h3 {
+  margin-top: 30px;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+form {
+  margin-bottom: 30px;
+}
+
+form div {
+  margin-bottom: 15px;
+}
+
+form label {
+  display: block;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+form input[type="text"], form input[type="password"], form input[type="email"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  color: #333;
+}
+
+form input[type="text"]:focus,
+form input[type="password"]:focus,
+form input[type="email"]:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table th, table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+table th {
+  background-color: #f2f2f2;
+  color: #333;
+  font-weight: bold;
+}
+
+table td button {
+  background-color: #f44336;
+  margin: 0 5px;
+}
+
+table td button:hover {
+  background-color: #e53935;
+}
+
+/* Стили для загрузки */
+button[disabled] {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+button[disabled]:hover {
+  background-color: #cccccc;
+}
+
+.upload-form {
+  margin-bottom: 30px;
+}
+
+.upload-form .form-group {
+  margin-bottom: 15px;
+}
+
+.upload-form input[type="file"] {
+  display: inline-block;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.upload-button {
+  background-color: #4CAF50;
+  padding: 10px 20px;
+  font-size: 14px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.upload-button:hover {
+  background-color: #45a049;
+}
+
+.upload-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.success-message {
+  color: green;
+  margin-top: 20px;
+  font-size: 16px;
+}
+
+.error-message {
+  color: red;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+.table-container {
+  margin-top: 30px;
+}
+
+.table-container .error-message {
+  color: red;
+  text-align: center;
+}
