@@ -27,6 +27,7 @@ def register_user(request):
     print("Received data:", data)
 
     username = data.get('username')
+    fullname = data.get('fullname')
     email = data.get('email')
     password = data.get('password')
 
@@ -54,7 +55,7 @@ def register_user(request):
         return JsonResponse({'error': 'Пользователь с таким email уже существует.'}, status=400)
 
     # Создание пользователя
-    user = User.objects.create_user(username=username, email=email, password=password)
+    user = User.objects.create_user(username=username, fullname=fullname, email=email, password=password)
     print("User created successfully:", user)
 
     return JsonResponse({'message': 'Пользователь успешно зарегистрирован.'}, status=201)
@@ -221,16 +222,17 @@ def delete_user(request, user_id):
 
         # Дополнительная проверка (например, для запрета удалять самого себя)
         if request.user == user:
-            return Response({'error': 'Вы не можете удалить себя.'}, status=403)
+            return Response({'error': 'Вы не можете удалить себя.'}, status=status.HTTP_403_FORBIDDEN)
 
         # Удаление всех файлов пользователя, если это необходимо
         File.objects.filter(user=user).delete()
 
+        # Удаление пользователя
         user.delete()
-        return Response({'message': 'Пользователь успешно удалён.'}, status=200)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     except CustomUser.DoesNotExist:
-        return Response({'error': 'Пользователь не найден.'}, status=404)
+        return Response({'error': 'Пользователь не найден.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])

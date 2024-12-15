@@ -7,12 +7,12 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-container">
-        <p>© {currentYear} Mycloud. Все права защищены.</p>
-        <div className="footer-links">
+        <p>© {currentYear} Mycloud. Марков А.С.</p>
+        {/* <div className="footer-links">
           <a href="/terms" className="footer-link">Условия обслуживания</a>
           <a href="/privacy" className="footer-link">Политика конфиденциальности</a>
           <a href="/contact" className="footer-link">Связаться с нами</a>
-        </div>
+        </div> */}
       </div>
     </footer>
   );

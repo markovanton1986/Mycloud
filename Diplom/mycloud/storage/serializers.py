@@ -47,20 +47,19 @@ class FileSerializer(serializers.ModelSerializer):
 
 # Дополнительный кастомный сериализатор для пользователя (если потребуется для более сложной логики)
 class CustomUserSerializer(serializers.ModelSerializer):
-    fullname = serializers.CharField(source='get_fullname', read_only=True)  # Получаем полное имя пользователя
+    fullname = serializers.CharField(required=False, allow_blank=True)  # поле fullname для сериализации
 
     class Meta:
-        model = CustomUser  # Используем кастомную модель пользователя
-        fields = ['id', 'username', 'fullname', 'email', 'is_staff']  # Указываем нужные поля
+        model = CustomUser
+        fields = ['id', 'username', 'fullname', 'email', 'is_staff']  # Включаем fullname в список полей
 
     def create(self, validated_data):
-        # Дополнительная логика для создания пользователя
         return CustomUser.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        # Логика обновления пользователя
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
+        instance.fullname = validated_data.get('fullname', instance.fullname)  # Сохраняем fullname
         instance.is_staff = validated_data.get('is_staff', instance.is_staff)
         instance.save()
         return instance

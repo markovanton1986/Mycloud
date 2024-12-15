@@ -15,18 +15,13 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
-
-
-    @property
-    def full_name(self):
-        # Это свойство возвращает полное имя пользователя (если вы хотите объединить имя и фамилию)
-        return f"{self.first_name} {self.last_name}"
+    def get_fullname(self):
+        return self.fullname or f'{self.first_name} {self.last_name}'
 
     @property
     def is_admin(self):
         # Это свойство возвращает, является ли пользователь администратором
         return self.is_staff
-
 
 
 # Модель для хранения файлов

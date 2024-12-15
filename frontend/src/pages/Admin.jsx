@@ -129,15 +129,25 @@ function Admin() {
   const handleDeleteUser = async (userId) => {
     if (window.confirm("Вы уверены, что хотите удалить этого пользователя?")) {
       try {
-        await authorizedRequest({
-          method: "DELETE",
-          url: `http://localhost:8000/api/admin/users/${userId}/`,
+        const token = getTokenFromCookies();  // Получаем токен из cookies или storage
+        if (!token) {
+          alert("Ошибка: не найден токен аутентификации");
+          return;
+        }
+  
+        const response = await axios.delete(`http://localhost:8000/api/admin/users/${userId}/delete/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
         });
-        setUsers(users.filter(user => user.id !== userId));
-        alert("Пользователь успешно удалён.");
+  
+        if (response.status === 204) {
+          setUsers(users.filter(user => user.id !== userId));
+          alert("Пользователь успешно удалён.");
+        }
       } catch (error) {
         console.error("Ошибка удаления пользователя:", error);
-        setError("Не удалось удалить пользователя");
+        alert("Ошибка: не удалось удалить пользователя.");
       }
     }
   };
@@ -251,7 +261,7 @@ function Admin() {
           <label>Полное имя:</label>
           <input
             type="text"
-            value={formData.fullName}
+            value={formData.fullname}
             onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
           />
         </div>

@@ -106,11 +106,11 @@ const Register = () => {
             <input
               type="text"
               placeholder="Полное имя"
-              name="fullName"
-              value={formData.fullName}
+              name="fullname"
+              value={formData.fullname}
               onChange={handleInputChange}
             />
-            {errors.fullName && <div className="error-message">{errors.fullName}</div>}
+            {errors.fullname && <div className="error-message">{errors.fullname}</div>}
           </div>
           <div>
             <input
