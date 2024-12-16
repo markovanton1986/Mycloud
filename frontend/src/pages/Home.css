@@ -1,12 +1,12 @@
 .home-container {
     text-align: center;
     padding: 20px;
-    background-image: url('/img/mycloud2.jpg'); /* Путь к вашему изображению */
-    background-size: cover; /* Растягивает изображение, чтобы оно заполнило весь контейнер */
-    background-position: center; /* Центрует изображение */
-    background-repeat: no-repeat; /* Избегает повторения изображения */
-    height: 100vh; /* Устанавливает высоту на весь экран */
-    width: 100%; /* Устанавливает ширину на 100% */
+    background-image: url('/img/mycloud2.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    width: 100%;
 }
 
 .home-title {

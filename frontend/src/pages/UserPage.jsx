@@ -9,8 +9,8 @@ function UserPage() {
   const [uploadStatus, setUploadStatus] = useState(null);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [editingFileId, setEditingFileId] = useState(null); // ID файла, комментарий которого редактируется
-  const [newComment, setNewComment] = useState(''); // Новый комментарий для редактирования
+  const [editingFileId, setEditingFileId] = useState(null);
+  const [newComment, setNewComment] = useState('');
 
   // Получение токена из cookies
   const getTokenFromCookies = () => {
@@ -144,7 +144,7 @@ function UserPage() {
           },
         });
         alert("Файл успешно удалён.");
-        fetchFiles(); // Обновление списка файлов
+        fetchFiles();
       } catch (error) {
         console.error("Ошибка удаления файла:", error);
         alert("Не удалось удалить файл.");
@@ -162,7 +162,7 @@ function UserPage() {
     const updatedFiles = files.map((file) =>
       file.id === fileId ? { ...file, comment: newComment } : file
     );
-    setFiles(updatedFiles); // Немедленно обновите локальное состояние
+    setFiles(updatedFiles);
   
     try {
       await authorizedRequest({
@@ -181,8 +181,8 @@ function UserPage() {
 
   // Просмотр файла
   const handleViewFile = (fileUrl) => {
-    const fullUrl = `http://localhost:8000${fileUrl}`; // формируем полный URL
-    window.open(fullUrl, "_blank"); // открываем файл в новой вкладке
+    const fullUrl = `http://localhost:8000${fileUrl}`;
+    window.open(fullUrl, "_blank");
   };
 
   // Переименование файла
@@ -196,7 +196,7 @@ function UserPage() {
           data: { name: newFileName },
         });
         alert("Имя файла обновлено.");
-        fetchFiles(); // Обновление списка файлов после переименования
+        fetchFiles();
       } catch (error) {
         console.error("Ошибка обновления имени файла:", error);
         alert("Не удалось обновить имя файла.");
@@ -207,7 +207,7 @@ function UserPage() {
   // Скачивание файла
   const handleDownloadFile = (fileUrl) => {
     const link = document.createElement("a");
-    link.href = `http://localhost:8000${fileUrl}`;  // Преобразуем относительный URL в полный
+    link.href = `http://localhost:8000${fileUrl}`;
     link.download = true;
     link.click();
   };
@@ -217,7 +217,7 @@ function UserPage() {
     if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
     return `${(size / (1024 * 1024)).toFixed(2)} MB`;
   };
-
+  // Ссылка
   const handleCopyLink = (fileUrl) => {
     navigator.clipboard.writeText(fileUrl)
       .then(() => {

@@ -9,9 +9,9 @@ const Logout = () => {
         const logoutUser = async () => {
             try {
                 await axios.post("http://localhost:8000/api/logout/", {}, {
-                    withCredentials: true,  // Отправляем cookies
+                    withCredentials: true,
                 });
-                navigate("/login");  // Перенаправление на страницу входа
+                navigate("/login");
             } catch (error) {
                 console.error("Ошибка выхода:", error);
             }

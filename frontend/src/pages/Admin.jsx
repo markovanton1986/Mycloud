@@ -129,7 +129,7 @@ function Admin() {
   const handleDeleteUser = async (userId) => {
     if (window.confirm("Вы уверены, что хотите удалить этого пользователя?")) {
       try {
-        const token = getTokenFromCookies();  // Получаем токен из cookies или storage
+        const token = getTokenFromCookies();
         if (!token) {
           alert("Ошибка: не найден токен аутентификации");
           return;

@@ -11,7 +11,7 @@ const Footer = () => {
         {/* <div className="footer-links">
           <a href="/terms" className="footer-link">Условия обслуживания</a>
           <a href="/privacy" className="footer-link">Политика конфиденциальности</a>
-          <a href="/contact" className="footer-link">Связаться с нами</a>
+          <a href="/contact" className="footer-link">Связаться со мной</a>
         </div> */}
       </div>
     </footer>

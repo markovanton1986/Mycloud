@@ -1,33 +1,37 @@
 /* Общий контейнер формы */
 .register-container {
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
+    text-align: center;
     padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-image: url('/img/mycloud2.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    width: 100%;
 }
 
 .register-title {
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 2rem;
     margin-bottom: 20px;
 }
 
 .register-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    display: inline-block;
+    text-align: left;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .register-form input {
-    padding: 12px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
     width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
 }
 
 .register-form input:focus {
@@ -36,13 +40,15 @@
 }
 
 .register-form button {
-    padding: 12px;
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    color: #fff;
     background-color: #007bff;
-    color: white;
-    font-size: 16px;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .register-form button:disabled {

@@ -23,9 +23,9 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setMessage("");  // Очищаем сообщение перед отправкой
+    setMessage("");
 
-    const csrfToken = getCSRFToken(); // Получаем CSRF токен
+    const csrfToken = getCSRFToken();
 
     try {
       const response = await axios.post(
@@ -34,7 +34,7 @@ const Login = () => {
         {
           withCredentials: true,
           headers: {
-            "X-CSRFToken": csrfToken,  // Передаем CSRF токен
+            "X-CSRFToken": csrfToken,
           }
         }
       );
