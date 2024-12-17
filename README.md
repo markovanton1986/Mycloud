@@ -99,95 +99,96 @@ npm run dev
 
 ## Структура папок и файлов проекта. 
 
-
-Mucloud/
-    Diplom/
-        .idea/ - скрытая папка, в которой хрянятся конфигурационные файлы проекта
-        venv/ - папка для хранения виртуальной среды 
-        mycloud/
-            media/ - папка для хранения данных
-                files/
-                static/ - статические файлы Django
-                mycloud/
-                    __pycache__ - директория
-                    __init__.py - обозначение директории как пакета
-                    asgi.py - настройки ASGI
-                    settings.py - настройки
-                    urls.py - маршруты
-                    wsgi.py - конфигурации для WSGI
-                storage/ - приложение Django
-                    __pycache__/
-                    migrations/ - миграции базы данных
-                    templates/ - шаблоны HTML
-                        storage/ - приложение
-                    __init__.py
-                    admin.py - настройки панели администратора
-                    apps.py - конфигурация приложения
-                    forms.py - создание форм
-                    models.py - модели данных Django
-                    serializers.py - сериализаторы DRF
-                    tests.py - тесты для приложения
-                    urls.py - URL маршруты для бэкенда
-                    utils.py - хранение вспомогательных функциё
-                    views.py - представления Django
-                .gitignore - игнорирование файлов, данных
-                manage.py - точка для входа Django
-                requirements.txt - зависимости Python
-    frontend/
-        .vscode/ - скрытая директория, в которой находятся настройки и конфигурации
-            settings.json - файл конфигурации
-        dist/ - хранение скомпилированных, упакованных или готовых для распространения файлов проекта
-        node_modules/ - для всех зависимостей, которые необходимы проекту для выполнения
-        public/ - публичные файлы
-            vite.svg
-            img/ - папка для хранения файлов
-                logo.png
-                mycloud2.jpg
-        src/ - исходные файлы приложения 
-            assets/ - для хранения статичных ресурсов
-                react.svg
-            components/ - компоненты React
-                FileStorage.css 
-                FileStorage.jsx
-                Footer.css
-                Footer. jsx
-                Header.css
-                Header.jsx
-                LoadingFile.css
-                LoadingFile.jsx
-                NavBar.css
-                NavBar.jsx
-            pages/ - страницы приложения
-                Admin.css
-                Admin.jsx
-                Home.css
-                Home.jsx
-                Login.css
-                Login.jsx
-                Logout.css
-                Logout.jsx
-                Register.css
-                Register.jsx
-                UserPage.css
-                UserPage.jsx
-                Validations.jsx
-            tests/
-                tests.jsx - тесты
-        App.css стили для App.jsx
-        App.jsx - главный компонент приложения
-        index.css - стили
-        index.jsx - точка входа для React
-        main.jsx - точка входа для React-приложений
-        static/ - статистически файлы
-        .gitignore - игнорирование файлов, данных
-        build.jsx - кастомный файл
-        eslint.config.js - конфигурационный файл для ESLint
-        index.html - основной HTML-файл
-        package-lock.json - важный компонент проект, использующий npm для управления зависимостями в JavaScript
-        package.json - зависимости для фронтенда
-        README.md - описание проекта
-        vite.congig.jsx - конфигурационный файл для инструмента сборки Vite
-    README.md - инструкция по развёртыванию проекта и описание папок и файлов. 
+```
+Mucloud/  
+    Diplom/  
+        .idea/ - скрытая папка, в которой хрянятся конфигурационные файлы проекта  
+        venv/ - папка для хранения виртуальной среды  
+        mycloud/  
+            media/ - папка для хранения данных  
+                files/  
+                static/ - статические файлы Django  
+                mycloud/  
+                    __pycache__ - директория  
+                    __init__.py - обозначение директории как пакета  
+                    asgi.py - настройки ASGI  
+                    settings.py - настройки  
+                    urls.py - маршруты  
+                    wsgi.py - конфигурации для WSGI  
+                storage/ - приложение Django  
+                    __pycache__/  
+                    migrations/ - миграции базы данных  
+                    templates/ - шаблоны HTML  
+                        storage/ - приложение  
+                    __init__.py  
+                    admin.py - настройки панели администратора  
+                    apps.py - конфигурация приложения  
+                    forms.py - создание форм  
+                    models.py - модели данных Django  
+                    serializers.py - сериализаторы DRF  
+                    tests.py - тесты для приложения  
+                    urls.py - URL маршруты для бэкенда  
+                    utils.py - хранение вспомогательных функций  
+                    views.py - представления Django  
+                .gitignore - игнорирование файлов, данных  
+                manage.py - точка для входа Django  
+                requirements.txt - зависимости Python  
+    frontend/  
+        .vscode/ - скрытая директория, в которой находятся настройки и конфигурации  
+            settings.json - файл конфигурации  
+        dist/ - хранение скомпилированных, упакованных или готовых для распространения файлов проекта  
+        node_modules/ - для всех зависимостей, которые необходимы проекту для выполнения  
+        public/ - публичные файлы  
+            vite.svg  
+            img/ - папка для хранения файлов  
+                logo.png  
+                mycloud2.jpg  
+        src/ - исходные файлы приложения   
+            assets/ - для хранения статичных ресурсов  
+                react.svg  
+            components/ - компоненты React  
+                FileStorage.css  
+                FileStorage.jsx  
+                Footer.css  
+                Footer. jsx  
+                Header.css  
+                Header.jsx  
+                LoadingFile.css  
+                LoadingFile.jsx  
+                NavBar.css  
+                NavBar.jsx  
+            pages/ - страницы приложения  
+                Admin.css  
+                Admin.jsx  
+                Home.css  
+                Home.jsx  
+                Login.css  
+                Login.jsx  
+                Logout.css  
+                Logout.jsx  
+                Register.css  
+                Register.jsx  
+                UserPage.css  
+                UserPage.jsx  
+                Validations.jsx  
+            tests/  
+                tests.jsx - тесты  
+        App.css стили для App.jsx  
+        App.jsx - главный компонент приложения  
+        index.css - стили  
+        index.jsx - точка входа для React  
+        main.jsx - точка входа для React-приложений  
+        static/ - статистически файлы  
+        .gitignore - игнорирование файлов, данных  
+        build.jsx - кастомный файл  
+        eslint.config.js - конфигурационный файл для ESLint  
+        index.html - основной HTML-файл  
+        package-lock.json - важный компонент проект, использующий npm для управления зависимостями в JavaScript  
+        package.json - зависимости для фронтенда  
+        README.md - описание проекта  
+        vite.congig.jsx - конфигурационный файл для инструмента сборки Vite  
+    README.md - инструкция по развёртыванию проекта и описание папок и файлов  
+```
 
         
 
