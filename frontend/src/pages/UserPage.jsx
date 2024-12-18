@@ -158,12 +158,12 @@ function UserPage() {
       alert("Комментарий не может быть пустым.");
       return;
     }
-  
+
     const updatedFiles = files.map((file) =>
       file.id === fileId ? { ...file, comment: newComment } : file
     );
     setFiles(updatedFiles);
-  
+
     try {
       await authorizedRequest({
         method: "PATCH",
@@ -212,21 +212,60 @@ function UserPage() {
     link.click();
   };
 
+  // Генерация публичной ссылки для файла
+  const handleGenerateLink = async (fileId) => {
+    try {
+      const response = await authorizedRequest({
+        method: "GET",
+        url: `http://localhost:8000/api/files/${fileId}/link/`,
+      });
+      console.log("Server Response:", response.data);
+      console.log("Generated file link:", response.data.link);
+      if (response.data.link) {
+        const fullUrl = `http://localhost:8000${response.data.link}`;
+        navigator.clipboard.writeText(fullUrl)
+          .then(() => {
+            alert("Ссылка скопирована в буфер обмена!");
+          })
+          .catch((error) => {
+            console.error("Ошибка при копировании ссылки:", error);
+            alert("Не удалось скопировать ссылку.");
+          });
+      } else {
+        alert("Ошибка: Не удалось получить ссылку.");
+      }
+    } catch (error) {
+      console.error("Ошибка генерации ссылки:", error);
+      alert("Не удалось получить ссылку.");
+    }
+  };
+
+  // Ссылка
+
+  // const handleCopyLink = (fileUrl) => {
+  //   console.log("Received fileUrl:", fileUrl);
+
+  //   if (!fileUrl) {
+  //     console.error("fileUrl is undefined or null");
+  //     return;
+  //   }
+
+  //   const fullUrl = `http://localhost:8000${fileUrl}`;
+
+  //   navigator.clipboard.writeText(fullUrl)
+  //     .then(() => {
+  //       alert("Ссылка скопирована в буфер обмена!");
+  //     })
+  //     .catch((error) => {
+  //       console.error("Ошибка при копировании ссылки:", error);
+  //       alert("Не удалось скопировать ссылку.");
+  //     });
+  // };
+
   const formatFileSize = (size) => {
     if (size < 1024) return `${size} B`;
     if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
     return `${(size / (1024 * 1024)).toFixed(2)} MB`;
-  };
-  // Ссылка
-  const handleCopyLink = (fileUrl) => {
-    navigator.clipboard.writeText(fileUrl)
-      .then(() => {
-        alert("Ссылка скопирована в буфер обмена!");
-      })
-      .catch((error) => {
-        console.error("Ошибка при копировании ссылки:", error);
-        alert("Не удалось скопировать ссылку.");
-      });
   };
 
   return (
@@ -297,7 +336,8 @@ function UserPage() {
                   <button onClick={() => setEditingFileId(file.id)}>Редактировать комментарий</button>
                   <button onClick={() => handleDownloadFile(file.file)}>Скачать</button>
                   <button onClick={() => handleDelete(file.id)}>Удалить</button>
-                  <button onClick={() => handleCopyLink(file.public_link)}>Копировать ссылку</button>
+                  <button onClick={() => handleGenerateLink(file.id)}>Скачать ссылку</button>
+                  {/* <button onClick={() => handleCopyLink(file.public_link)}>Скачать ссылку</button> */}
                 </td>
               </tr>
             ))}

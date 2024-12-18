@@ -178,12 +178,22 @@ def download_file(request, file_id):
 
 
 # Генерация ссылки на файл
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def generate_file_link(request, file_id):
     try:
+        # Получаем файл, принадлежащий текущему пользователю
         file = File.objects.get(id=file_id, user=request.user)
-        return JsonResponse({'link': f'/media/{file.file}'})
+
+        # Печатаем URL для отладки
+        print(f"File URL: {file.file.url}")
+
+        # Генерируем корректную публичную ссылку
+        file_url = file.file.url  # Используем `.url` для получения правильного пути
+
+        # Возвращаем ссылку в ответе
+        return JsonResponse({'link': file_url})
+
     except File.DoesNotExist:
         return JsonResponse({'error': 'Файл не найден.'}, status=404)
 
@@ -334,4 +344,3 @@ def update_comment(request, file_id):
 
     except File.DoesNotExist:
         return Response({'detail': 'Файл не найден.'}, status=status.HTTP_404_NOT_FOUND)
-

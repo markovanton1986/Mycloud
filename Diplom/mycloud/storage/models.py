@@ -1,7 +1,11 @@
+import os
+
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+import uuid
+
 
 # Расширенная модель пользователя
 class CustomUser(AbstractUser):
@@ -45,8 +49,10 @@ class File(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        # Генерация публичной ссылки только если она ещё не установлена
         if not self.public_link:
-            self.public_link = f"http://localhost:8000/media/{self.file.name}"
+            # Генерация уникальной публичной ссылки с использованием UUID
+            self.public_link = self.generate_public_link()
         super().save(*args, **kwargs)
 
     def generate_public_link(self):
@@ -54,8 +60,16 @@ class File(models.Model):
         Генерация уникальной публичной ссылки для скачивания файла.
         Ссылка должна быть уникальной и безопасной для доступа.
         """
-        import uuid
-        return f"{settings.BASE_URL}/files/{uuid.uuid4()}/"
+        # Генерация уникального идентификатора для ссылки
+        file_uuid = uuid.uuid4()  # Генерация уникального UUID
+        return f"{settings.BASE_URL}/files/{file_uuid}/"  # Используем BASE_URL из настроек для формирования полного пути
+
+    @property
+    def file_url(self):
+        """
+        Получение URL файла (относительный путь в /media).
+        """
+        return os.path.join(settings.MEDIA_URL, self.file.name)
 
 # Модель для истории скачивания файлов
 class FileDownloadHistory(models.Model):
