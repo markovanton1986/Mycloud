@@ -77,7 +77,7 @@
 
 /* Сообщения об ошибках */
 .error-message {
-    color: #e74c3c;
+    color: #3f71dc;
     font-size: 14px;
     margin-top: 5px;
 }
@@ -93,7 +93,7 @@
     position: absolute;
     top: 100%;
     left: 0;
-    color: red;
+    color: rgb(6, 6, 6);
     margin-top: 5px;
 }
 
@@ -107,7 +107,8 @@
         font-size: 20px;
     }
 
-    .register-form input, .register-form button {
+    .register-form input,
+    .register-form button {
         font-size: 14px;
     }
 }

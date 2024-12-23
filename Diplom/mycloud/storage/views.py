@@ -15,6 +15,10 @@ import json
 import re
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_protect
+from django.middleware.csrf import get_token
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 
 User = get_user_model()
 
@@ -30,29 +34,6 @@ def register_user(request):
     fullname = data.get('fullname')
     email = data.get('email')
     password = data.get('password')
-
-    # Проверка обязательных полей
-    if not username or not email or not password:
-        print("Error: Missing fields")
-        return JsonResponse({'error': 'Все поля обязательны.'}, status=400)
-
-    # Валидация email
-    if not validate_email(email):
-        return JsonResponse({'error': 'Неверный формат email.'}, status=400)
-
-    # Валидация пароля
-    try:
-        validate_password(password)
-    except ValidationError as e:
-        return JsonResponse({'error': str(e)}, status=400)
-
-    if User.objects.filter(username=username).exists():
-        print("Error: Username already exists")
-        return JsonResponse({'error': 'Пользователь с таким username уже существует.'}, status=400)
-
-    if User.objects.filter(email=email).exists():
-        print("Error: Email already exists")
-        return JsonResponse({'error': 'Пользователь с таким email уже существует.'}, status=400)
 
     # Создание пользователя
     user = User.objects.create_user(username=username, fullname=fullname, email=email, password=password)
@@ -344,3 +325,22 @@ def update_comment(request, file_id):
 
     except File.DoesNotExist:
         return Response({'detail': 'Файл не найден.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+@csrf_protect
+def test_csrf_view(request):
+    if request.method == "POST":
+        # Если CSRF токен валиден, возвращаем успешный ответ
+        return JsonResponse({"message": "CSRF token is valid!"}, status=200)
+    elif request.method == "GET":
+        # Возвращаем CSRF токен (если нужно)
+        csrf_token = get_token(request)
+        return JsonResponse({"csrf_token": csrf_token}, status=200)
+    else:
+        # Неподдерживаемый метод
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+# @ensure_csrf_cookie
+# def csrf(request):
+#     return JsonResponse({'csrfToken': get_token(request)})

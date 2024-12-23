@@ -12,7 +12,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
 import UserPage from './pages/UserPage';
-import Logout from "./pages/Logout";
+import Logout from './pages/Logout';
 
 import './App.css';
 

@@ -1,9 +1,7 @@
 from django.urls import path
 from . import views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import register_user
-
-
+from .views import register_user, test_csrf_view
 
 urlpatterns = [
     # Аутентификация и регистрация
@@ -28,4 +26,8 @@ urlpatterns = [
     path('files/<int:file_id>/rename/', views.rename_file, name='rename_file'),
     path('files/<int:file_id>/', views.file_detail, name='file_detail'),
     path('files/<int:file_id>/comment/', views.update_comment, name='update_comment'),
+
+
+    path('test-csrf/', test_csrf_view, name='test_csrf'),
+
 ]

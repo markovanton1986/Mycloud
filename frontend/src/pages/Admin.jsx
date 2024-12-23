@@ -13,6 +13,14 @@ function Admin() {
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState({ isVisible: false, userId: null });
+
+  // Уведомления
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   // Получение токена из cookies
   const getTokenFromCookies = () => {
@@ -80,7 +88,7 @@ function Admin() {
     }
   };
 
-  // Регистрация пользователя с валидацией
+  // Регистрация пользователя
   const handleRegister = async (e) => {
     e.preventDefault();
     const { username, password, email, fullname } = formData;
@@ -92,13 +100,13 @@ function Admin() {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8000/api/register/', {
+      await axios.post('http://localhost:8000/api/register/', {
         username,
         password,
         email,
         fullname: fullname,
       });
-      alert('Пользователь успешно зарегистрирован!');
+      showNotification('Пользователь успешно зарегистрирован!', 'success');
       setFormData({ username: '', password: '', email: '', fullname: '' });
     } catch (err) {
       setError('Ошибка при регистрации пользователя');
@@ -126,29 +134,21 @@ function Admin() {
   };
 
   // Удаление пользователя
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm("Вы уверены, что хотите удалить этого пользователя?")) {
-      try {
-        const token = getTokenFromCookies();
-        if (!token) {
-          alert("Ошибка: не найден токен аутентификации");
-          return;
-        }
-  
-        const response = await axios.delete(`http://localhost:8000/api/admin/users/${userId}/delete/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        });
-  
-        if (response.status === 204) {
-          setUsers(users.filter(user => user.id !== userId));
-          alert("Пользователь успешно удалён.");
-        }
-      } catch (error) {
-        console.error("Ошибка удаления пользователя:", error);
-        alert("Ошибка: не удалось удалить пользователя.");
-      }
+  const handleDeleteUser = async () => {
+    if (!confirmDelete.userId) return;
+
+    try {
+      await authorizedRequest({
+        method: "DELETE",
+        url: `http://localhost:8000/api/admin/users/${confirmDelete.userId}/delete/`,
+      });
+      setUsers(users.filter(user => user.id !== confirmDelete.userId));
+      showNotification('Пользователь успешно удалён.', 'success');
+    } catch (error) {
+      console.error("Ошибка удаления пользователя:", error);
+      showNotification('Ошибка при удалении пользователя.', 'error');
+    } finally {
+      setConfirmDelete({ isVisible: false, userId: null });
     }
   };
 
@@ -171,7 +171,7 @@ function Admin() {
       document.cookie = `access_token=${response.data.access};path=/;`;
       document.cookie = `refresh_token=${response.data.refresh};path=/;`;
       setIsAuthenticated(true);
-      alert('Вы успешно вошли в систему!');
+      showNotification('Вы успешно вошли в систему!', 'success');
     } catch (err) {
       setError('Ошибка аутентификации');
       console.error('Ошибка входа:', err);
@@ -185,7 +185,7 @@ function Admin() {
     document.cookie = 'access_token=; Max-Age=0; path=/;';
     document.cookie = 'refresh_token=; Max-Age=0; path=/;';
     setIsAuthenticated(false);
-    alert('Вы успешно вышли из системы.');
+    showNotification('Вы успешно вышли из системы.', 'success');
   };
 
   // Загружаем пользователей при монтировании компонента, если пользователь аутентифицирован
@@ -200,6 +200,11 @@ function Admin() {
     return (
       <div>
         <h2>Вход в систему</h2>
+        {notification && (
+          <div className={`notification ${notification.type}`}>
+            {notification.message}
+          </div>
+        )}
         <form onSubmit={handleLogin}>
           <div>
             <label>Имя пользователя:</label>
@@ -230,7 +235,14 @@ function Admin() {
     <div className="admin-container">
       <h2>Управление пользователями</h2>
       <button onClick={handleLogout}>Выход</button>
-      
+
+      {/* Уведомления */}
+      {notification && (
+        <div className={`notification ${notification.type}`}>
+          {notification.message}
+        </div>
+      )}
+
       <h3>Регистрация нового пользователя</h3>
       <form onSubmit={handleRegister}>
         <div>
@@ -242,11 +254,11 @@ function Admin() {
           />
         </div>
         <div>
-          <label>Пароль:</label>
+          <label>Полное имя:</label>
           <input
-            type="password"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            type="text"
+            value={formData.fullname}
+            onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
           />
         </div>
         <div>
@@ -258,11 +270,11 @@ function Admin() {
           />
         </div>
         <div>
-          <label>Полное имя:</label>
+          <label>Пароль:</label>
           <input
-            type="text"
-            value={formData.fullname}
-            onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           />
         </div>
         <button type="submit" disabled={loading}>
@@ -291,12 +303,27 @@ function Admin() {
                 <td>{user.fullname}</td>
                 <td>{user.email}</td>
                 <td>
-                  <button onClick={() => handleDeleteUser(user.id)}>Удалить</button>
+                  <button onClick={() => setConfirmDelete({ isVisible: true, userId: user.id })}>
+                    Удалить
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      )}
+
+      {/* Модальное окно подтверждения удаления */}
+      {confirmDelete.isVisible && (
+        <div className="modal">
+          <div className="modal-content">
+            <p>Вы уверены, что хотите удалить этого пользователя?</p>
+            <button onClick={handleDeleteUser}>Да</button>
+            <button onClick={() => setConfirmDelete({ isVisible: false, userId: null })}>
+              Отмена
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

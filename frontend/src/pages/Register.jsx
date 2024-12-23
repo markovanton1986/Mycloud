@@ -62,13 +62,12 @@ const Register = () => {
           withCredentials: true,
         }
       );
-      
+
       if (response.status === 201) {
         setSuccess(true);
         console.log("Регистрация прошла успешно, перенаправление на вход...");
-        setTimeout(() => {
-          navigate("/login");
-        }, 8000);
+        navigate("/login");
+
       } else {
         setErrors({ server: "Неожиданный ответ от сервера." });
       }

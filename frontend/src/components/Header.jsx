@@ -1,8 +1,26 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './Header.css';
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../store/authSlice";
+import "./Header.css";
 
 const Header = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+
+  const handleLogout = () => {
+    // Сброс состояния в Redux
+    dispatch(logout());
+
+    // Удаление токенов из cookies
+    document.cookie = "access_token=; Max-Age=0; path=/;";
+    document.cookie = "refresh_token=; Max-Age=0; path=/;";
+
+    // Перенаправление на страницу входа
+    navigate("/login");
+  };
+
   return (
     <header className="header">
       <div className="header-container">
@@ -13,16 +31,25 @@ const Header = () => {
             <span className="logo-text">Mycloud</span>
           </Link>
         </div>
-        {/* <nav className="nav">
-          <ul className="nav-links">
-            <li><Link to="/dashboard" className="nav-link">Приборная панель</Link></li>
-            <li><Link to="/files" className="nav-link">Мои файлы</Link></li>
-            <li><Link to="/profile" className="nav-link">Профиль</Link></li>
-          </ul>
-        </nav> */}
+
         <div className="auth-buttons">
-          <Link to="/login" className="auth-button">Login</Link>
-          <Link to="/register" className="auth-button">Register</Link>
+          {isAuthenticated ? (
+            <>
+              <span className="welcome-text">Добро пожаловать, {user.username}!</span>
+              <button onClick={handleLogout} className="auth-button">
+                Выйти
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="auth-button">
+                Войти
+              </Link>
+              <Link to="/register" className="auth-button">
+                Регистрация
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
