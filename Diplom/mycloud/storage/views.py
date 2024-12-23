@@ -341,6 +341,6 @@ def test_csrf_view(request):
         # Неподдерживаемый метод
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
-# @ensure_csrf_cookie
-# def csrf(request):
-#     return JsonResponse({'csrfToken': get_token(request)})
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({'csrfToken': get_token(request)})
