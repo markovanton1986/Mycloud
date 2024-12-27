@@ -21,13 +21,6 @@ const Register = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Получение CSRF токена из cookies
-  const getCSRFToken = () => {
-    const cookies = document.cookie.split('; ');
-    const csrfCookie = cookies.find(cookie => cookie.startsWith('csrftoken='));
-    return csrfCookie ? csrfCookie.split('=')[1] : null;
-  };
-
   // Валидация данных перед отправкой
   const validateFormData = () => {
     const validationErrors = validateRegistrationForm(formData);
@@ -48,8 +41,6 @@ const Register = () => {
       return;
     }
 
-    const csrfToken = getCSRFToken();
-
     try {
       const response = await axios.post(
         "http://localhost:8000/api/register/",
@@ -57,9 +48,8 @@ const Register = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
-          withCredentials: true,
+          withCredentials: true, // Включаем куки с запросом
         }
       );
 
@@ -67,7 +57,6 @@ const Register = () => {
         setSuccess(true);
         console.log("Регистрация прошла успешно, перенаправление на вход...");
         navigate("/login");
-
       } else {
         setErrors({ server: "Неожиданный ответ от сервера." });
       }

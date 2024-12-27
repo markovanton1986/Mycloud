@@ -22,67 +22,18 @@ function Admin() {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // Получение токена из cookies
-  const getTokenFromCookies = () => {
-    const cookies = document.cookie.split('; ');
-    const accessToken = cookies.find(cookie => cookie.startsWith('access_token='));
-    return accessToken ? accessToken.split('=')[1] : null;
-  };
-
-  // Обновление токена
-  const refreshAccessToken = async () => {
-    const refreshToken = getTokenFromCookies();
-    if (!refreshToken) {
-      console.error("Refresh token отсутствует");
-      return null;
-    }
-
-    try {
-      const response = await axios.post('http://localhost:8000/api/token/refresh/', {
-        refresh: refreshToken
-      }, { withCredentials: true });
-
-      const newAccessToken = response.data.access;
-      document.cookie = `access_token=${newAccessToken};path=/;`;
-      return newAccessToken;
-    } catch (error) {
-      console.error("Ошибка обновления токена:", error);
-      return null;
-    }
-  };
-
-  // Обёртка для защищённых запросов
+  // Обёртка для защищённых запросов с использованием withCredentials
   const authorizedRequest = async (config) => {
-    const token = getTokenFromCookies();
-    if (!token) {
-      console.error("Токен отсутствует. Перенаправление на страницу входа...");
-      window.location.href = "/login";
-      return;
-    }
-
     try {
       const response = await axios({
         ...config,
-        headers: {
-          ...config.headers,
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
+        withCredentials: true, // Это гарантирует, что куки будут автоматически отправляться с запросами
       });
       return response;
     } catch (error) {
       if (error.response?.status === 401) {
-        const newToken = await refreshAccessToken();
-        if (newToken) {
-          return axios({
-            ...config,
-            headers: {
-              ...config.headers,
-              Authorization: `Bearer ${newToken}`,
-            },
-            withCredentials: true,
-          });
-        }
+        alert("Необходима аутентификация. Перенаправляем на страницу входа...");
+        window.location.href = "/login"; // Перенаправление на страницу входа
       }
       throw error;
     }
@@ -168,8 +119,7 @@ function Admin() {
         username,
         password,
       });
-      document.cookie = `access_token=${response.data.access};path=/;`;
-      document.cookie = `refresh_token=${response.data.refresh};path=/;`;
+      // Куки с токенами автоматически устанавливаются через сервер (HttpOnly)
       setIsAuthenticated(true);
       showNotification('Вы успешно вошли в систему!', 'success');
     } catch (err) {
@@ -190,11 +140,10 @@ function Admin() {
 
   // Загружаем пользователей при монтировании компонента, если пользователь аутентифицирован
   useEffect(() => {
-    if (getTokenFromCookies()) {
+    if (isAuthenticated) {
       fetchUsers();
-      setIsAuthenticated(true);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (

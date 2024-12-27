@@ -13,30 +13,18 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Получение CSRF токена из cookies
-  const getCSRFToken = () => {
-    const cookies = document.cookie.split("; ");
-    const csrfCookie = cookies.find((cookie) => cookie.startsWith("csrftoken="));
-    return csrfCookie ? csrfCookie.split("=")[1] : null;
-  };
-
   // Обработка отправки формы
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const csrfToken = getCSRFToken();
-
     try {
       const response = await axios.post(
         "http://localhost:8000/api/login/",
         { username, password },
         {
-          withCredentials: true,
-          headers: {
-            "X-CSRFToken": csrfToken,
-          },
+          withCredentials: true, // Включаем передачу куков с запросом
         }
       );
 

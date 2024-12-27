@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Импортируем хук useNavigate
 import './UserPage.css';
 
 function UserPage() {
@@ -11,82 +12,27 @@ function UserPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [editingFileId, setEditingFileId] = useState(null);
   const [newComment, setNewComment] = useState('');
-  const [notification, setNotification] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState({ isVisible: false, fileId: null });
 
-  // Показ уведомления
-  const showNotification = (message, type = 'success') => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
+  const navigate = useNavigate();
 
-  // Получение токена из cookies
-  const getTokenFromCookies = () => {
-    const cookies = document.cookie.split('; ');
-    const accessToken = cookies.find(cookie => cookie.startsWith('access_token='));
-    return accessToken ? accessToken.split('=')[1] : null;
-  };
-
-  // Обновление токена
-  const refreshAccessToken = async () => {
-    const refreshToken = getTokenFromCookies();
-    if (!refreshToken) {
-      console.error("Refresh token отсутствует");
-      return null;
-    }
-
-    try {
-      const response = await axios.post('http://localhost:8000/api/token/refresh/', {
-        refresh: refreshToken
-      }, { withCredentials: true });
-
-      const newAccessToken = response.data.access;
-      document.cookie = `access_token=${newAccessToken};path=/;`;
-      return newAccessToken;
-    } catch (error) {
-      console.error("Ошибка обновления токена:", error);
-      return null;
-    }
-  };
-
-  // Обёртка для защищённых запросов
   const authorizedRequest = async (config) => {
-    const token = getTokenFromCookies();
-    if (!token) {
-      console.error("Токен отсутствует. Перенаправление на страницу входа...");
-      window.location.href = "/login";
-      return;
-    }
-
     try {
       const response = await axios({
         ...config,
-        headers: {
-          ...config.headers,
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
+        withCredentials: true,  // Передача куков с запросами
       });
       return response;
     } catch (error) {
       if (error.response?.status === 401) {
-        const newToken = await refreshAccessToken();
-        if (newToken) {
-          return axios({
-            ...config,
-            headers: {
-              ...config.headers,
-              Authorization: `Bearer ${newToken}`,
-            },
-            withCredentials: true,
-          });
-        }
+        console.log("Необходима аутентификация. Перенаправляем на страницу входа...");
+        navigate('/login');  // Перенаправление на страницу входа
+      } else if (error.response?.status === 403) {
+        console.log("Доступ запрещён. Убедитесь, что у вас есть права доступа.");
       }
       throw error;
     }
   };
 
-  // Получение списка файлов
   const fetchFiles = async () => {
     setLoadingFiles(true);
     try {
@@ -97,7 +43,6 @@ function UserPage() {
       setFiles(response.data.files || []);
     } catch (error) {
       console.error("Ошибка получения файлов:", error);
-      showNotification("Ошибка загрузки списка файлов.", "error");
     } finally {
       setLoadingFiles(false);
     }
@@ -107,12 +52,11 @@ function UserPage() {
     fetchFiles();
   }, [uploadStatus]);
 
-  // Обработчик загрузки файлов
   const handleUpload = async (e) => {
     e.preventDefault();
 
     if (!selectedFile) {
-      showNotification("Выберите файл для загрузки.", "error");
+      console.log("Выберите файл.");
       return;
     }
 
@@ -132,41 +76,36 @@ function UserPage() {
       });
 
       setUploadStatus("success");
-      showNotification("Файл успешно загружен!", "success");
+      console.log("Файл успешно загружен!");
       setSelectedFile(null);
       setComment('');
     } catch (error) {
       setUploadStatus("error");
       console.error("Ошибка загрузки файла:", error);
-      showNotification("Ошибка загрузки файла.", "error");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Удаление файла
-  const handleDelete = async () => {
-    if (!confirmDelete.fileId) return;
-
-    try {
-      await authorizedRequest({
-        method: "DELETE",
-        url: `http://localhost:8000/api/files/${confirmDelete.fileId}/delete/`,
-      });
-      showNotification("Файл успешно удалён.", "success");
-      fetchFiles();
-    } catch (error) {
-      console.error("Ошибка удаления файла:", error);
-      showNotification("Не удалось удалить файл.", "error");
-    } finally {
-      setConfirmDelete({ isVisible: false, fileId: null });
+  const handleDelete = async (fileId) => {
+    if (window.confirm("Вы уверены, что хотите удалить этот файл?")) {
+      try {
+        await authorizedRequest({
+          method: "DELETE",
+          url: `http://localhost:8000/api/files/${fileId}/delete/`,
+        });
+        console.log("Файл успешно удалён.");
+        fetchFiles();
+      } catch (error) {
+        console.error("Ошибка удаления файла:", error);
+        console.log("Не удалось удалить файл.");
+      }
     }
   };
 
-  // Обновление комментария
   const handleUpdateComment = async (fileId) => {
     if (!newComment) {
-      showNotification("Комментарий не может быть пустым.", "error");
+      console.log("Комментарий не может быть пустым.");
       return;
     }
 
@@ -181,16 +120,72 @@ function UserPage() {
         url: `http://localhost:8000/api/files/${fileId}/comment/`,
         data: { comment: newComment },
       });
-      showNotification("Комментарий обновлён.", "success");
+      console.log("Комментарий обновлён.");
       setEditingFileId(null);
       setNewComment("");
     } catch (error) {
       console.error("Ошибка обновления комментария:", error);
-      showNotification("Не удалось обновить комментарий.", "error");
+      console.log("Не удалось обновить комментарий.");
     }
   };
 
-  // Формат размера файла
+  const handleViewFile = (fileUrl) => {
+    const fullUrl = `http://localhost:8000${fileUrl}`;
+    window.open(fullUrl, "_blank");
+  };
+
+  const handleRenameFile = async (fileId, oldFileName) => {
+    const newFileName = prompt("Введите новое имя файла:", oldFileName);
+    if (newFileName && newFileName !== oldFileName) {
+      try {
+        await authorizedRequest({
+          method: "PUT",
+          url: `http://localhost:8000/api/files/${fileId}/rename/`,
+          data: { name: newFileName },
+        });
+        console.log("Имя файла обновлено.");
+        fetchFiles();
+      } catch (error) {
+        console.error("Ошибка обновления имени файла:", error);
+        console.log("Не удалось обновить имя файла.");
+      }
+    }
+  };
+
+  const handleDownloadFile = (fileUrl) => {
+    const link = document.createElement("a");
+    link.href = `http://localhost:8000${fileUrl}`;
+    link.download = true;
+    link.click();
+  };
+
+  const handleGenerateLink = async (fileId) => {
+    try {
+      const response = await authorizedRequest({
+        method: "GET",
+        url: `http://localhost:8000/api/files/${fileId}/link/`,
+      });
+      console.log("Server Response:", response.data);
+      console.log("Generated file link:", response.data.link);
+      if (response.data.link) {
+        const fullUrl = `http://localhost:8000${response.data.link}`;
+        navigator.clipboard.writeText(fullUrl)
+          .then(() => {
+            console.log("Ссылка скопирована в буфер обмена!");
+          })
+          .catch((error) => {
+            console.error("Ошибка при копировании ссылки:", error);
+            console.log("Не удалось скопировать ссылку.");
+          });
+      } else {
+        console.log("Ошибка: Не удалось получить ссылку.");
+      }
+    } catch (error) {
+      console.error("Ошибка генерации ссылки:", error);
+      console.log("Не удалось получить ссылку.");
+    }
+  };
+
   const formatFileSize = (size) => {
     if (size < 1024) return `${size} B`;
     if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
@@ -200,13 +195,6 @@ function UserPage() {
   return (
     <div className="user-page-container">
       <h2>Мои файлы</h2>
-
-      {/* Уведомления */}
-      {notification && (
-        <div className={`notification ${notification.type}`}>
-          {notification.message}
-        </div>
-      )}
 
       <form onSubmit={handleUpload} className="upload-form">
         <div className="form-group">
@@ -258,7 +246,7 @@ function UserPage() {
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                       />
-                      <button onClick={() => handleUpdateComment(file.id)}>Сохранить</button>
+                      <button onClick={() => handleUpdateComment(file.id)}>Сохранить комментарий</button>
                     </div>
                   ) : (
                     file.comment
@@ -267,27 +255,17 @@ function UserPage() {
                 <td>{formatFileSize(file.size)}</td>
                 <td>{new Date(file.uploaded_at).toLocaleString()}</td>
                 <td>
-                  <button onClick={() => setConfirmDelete({ isVisible: true, fileId: file.id })}>
-                    Удалить
-                  </button>
+                  <button onClick={() => handleViewFile(file.file)}>Просмотр</button>
+                  <button onClick={() => handleRenameFile(file.id, file.name)}>Переименовать файл</button>
+                  <button onClick={() => setEditingFileId(file.id)}>Редактировать комментарий</button>
+                  <button onClick={() => handleDownloadFile(file.file)}>Скачать</button>
+                  <button onClick={() => handleDelete(file.id)}>Удалить</button>
+                  <button onClick={() => handleGenerateLink(file.id)}>Скачать ссылку</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      )}
-
-      {/* Модальное окно подтверждения */}
-      {confirmDelete.isVisible && (
-        <div className="modal">
-          <div className="modal-content">
-            <p>Вы уверены, что хотите удалить файл?</p>
-            <button onClick={handleDelete}>Да</button>
-            <button onClick={() => setConfirmDelete({ isVisible: false, fileId: null })}>
-              Отмена
-            </button>
-          </div>
-        </div>
       )}
     </div>
   );

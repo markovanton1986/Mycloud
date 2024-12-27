@@ -20,6 +20,12 @@ from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 
+
+from django.contrib.auth import authenticate, login
+from django.http import JsonResponse
+from datetime import timedelta
+from rest_framework.decorators import api_view
+
 User = get_user_model()
 
 # Регистрация пользователя
@@ -51,33 +57,24 @@ def login_user(request):
 
     user = authenticate(username=username, password=password)
     if user:
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
+        login(request, user)
 
         response = JsonResponse({
             "message": "Вход выполнен успешно",
-            "access": access_token,
-            "refresh": refresh_token,
             "is_staff": user.is_staff,
         })
 
         response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=False,
+            key="sessionid",
+            value=request.session.session_key,
+            httponly=True,
             secure=False,
-            samesite='Lax'
-        )
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=False,
-            secure=False,
+            max_age=timedelta(days=7),
             samesite='Lax'
         )
 
         return response
+
     return JsonResponse({"error": "Неправильный логин или пароль"}, status=400)
 
 
