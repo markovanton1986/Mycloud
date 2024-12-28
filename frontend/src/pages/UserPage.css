@@ -1,16 +1,17 @@
 /* Общие стили */
 .user-page-container {
   text-align: center;
-    padding: 20px;
-    background-image: url('/img/mycloud2.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    height: 100vh;
-    width: 100%;
+  padding: 20px;
+  background-image: url('/img/mycloud2.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+  width: 100%;
 }
 
-h2, h3 {
+h2,
+h3 {
   color: #333;
 }
 
@@ -23,12 +24,12 @@ h3 {
 /* Форма загрузки */
 .upload-form {
   display: inline-block;
-    text-align: left;
-    background-color: #f9f9f9;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .form-group {
@@ -107,7 +108,8 @@ table {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-th, td {
+th,
+td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #007bff;

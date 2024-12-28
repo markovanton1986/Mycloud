@@ -12,14 +12,33 @@ function UserPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [editingFileId, setEditingFileId] = useState(null);
   const [newComment, setNewComment] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const navigate = useNavigate();
 
+  axios.defaults.withCredentials = true;
+
+  const getCSRFToken = () => {
+    const csrfCookie = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('csrftoken='));
+    return csrfCookie ? csrfCookie.split('=')[1] : null;
+  };
+
+
+
   const authorizedRequest = async (config) => {
     try {
+      const csrfToken = getCSRFToken();
+      const headers = {
+        ...config.headers,
+        'X-CSRFToken': csrfToken,  // Добавляем CSRF-токен
+      };
+
       const response = await axios({
         ...config,
-        withCredentials: true,  // Передача куков с запросами
+        withCredentials: true,  // Передача куков
+        headers,
       });
       return response;
     } catch (error) {
@@ -27,7 +46,7 @@ function UserPage() {
         console.log("Необходима аутентификация. Перенаправляем на страницу входа...");
         navigate('/login');  // Перенаправление на страницу входа
       } else if (error.response?.status === 403) {
-        console.log("Доступ запрещён. Убедитесь, что у вас есть права доступа.");
+        console.log("Доступ запрещён. Проверьте CSRF или права доступа.");
       }
       throw error;
     }
@@ -172,6 +191,8 @@ function UserPage() {
         navigator.clipboard.writeText(fullUrl)
           .then(() => {
             console.log("Ссылка скопирована в буфер обмена!");
+            setLinkCopied(true);  // Устанавливаем состояние, что ссылка скопирована
+            setTimeout(() => setLinkCopied(false), 3000);  // Сбрасываем состояние через 3 секунды
           })
           .catch((error) => {
             console.error("Ошибка при копировании ссылки:", error);
@@ -196,6 +217,7 @@ function UserPage() {
     <div className="user-page-container">
       <h2>Мои файлы</h2>
 
+
       <form onSubmit={handleUpload} className="upload-form">
         <div className="form-group">
           <label>Выберите файл:</label>
@@ -217,6 +239,8 @@ function UserPage() {
 
       {uploadStatus === "success" && <p className="success-message">Файл успешно загружен!</p>}
       {uploadStatus === "error" && <p className="error-message">Ошибка загрузки файла.</p>}
+
+      {linkCopied && <p className="success-message">Ссылка успешно скопирована в буфер обмена!</p>}
 
       <h3>Список файлов</h3>
       {loadingFiles ? (

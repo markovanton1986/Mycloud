@@ -22,18 +22,32 @@ function Admin() {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // Обёртка для защищённых запросов с использованием withCredentials
+  // Получение CSRF-токена из куков
+  const getCSRFToken = () => {
+    const name = 'csrftoken';
+    return document.cookie
+      .split('; ')
+      .find((row) => row.startsWith(`${name}=`))
+      ?.split('=')[1];
+  };
+
+  // Упрощённый запрос с учётом CSRF и куков
   const authorizedRequest = async (config) => {
     try {
+      const csrfToken = getCSRFToken();
       const response = await axios({
         ...config,
-        withCredentials: true, // Это гарантирует, что куки будут автоматически отправляться с запросами
+        headers: {
+          ...config.headers,
+          'X-CSRFToken': csrfToken,
+        },
+        withCredentials: true,
       });
       return response;
     } catch (error) {
       if (error.response?.status === 401) {
-        alert("Необходима аутентификация. Перенаправляем на страницу входа...");
-        window.location.href = "/login"; // Перенаправление на страницу входа
+        alert('Необходима аутентификация. Перенаправляем на страницу входа...');
+        window.location.href = '/login';
       }
       throw error;
     }
@@ -51,14 +65,14 @@ function Admin() {
 
     setLoading(true);
     try {
-      await axios.post('http://localhost:8000/api/register/', {
-        username,
-        password,
-        email,
-        fullname: fullname,
+      await authorizedRequest({
+        method: 'POST',
+        url: 'http://localhost:8000/api/register/',
+        data: { username, password, email, fullname },
       });
-      showNotification('Пользователь успешно зарегистрирован!', 'success');
+      showNotification('Пользователь успешно зарегистрирован!');
       setFormData({ username: '', password: '', email: '', fullname: '' });
+      fetchUsers(); // Обновляем список пользователей после регистрации
     } catch (err) {
       setError('Ошибка при регистрации пользователя');
       console.error('Ошибка регистрации:', err);
@@ -72,13 +86,13 @@ function Admin() {
     setLoading(true);
     try {
       const response = await authorizedRequest({
-        method: "GET",
-        url: "http://localhost:8000/api/admin/users/",
+        method: 'GET',
+        url: 'http://localhost:8000/api/admin/users/',
       });
       setUsers(response.data || []);
     } catch (error) {
-      console.error("Ошибка получения пользователей:", error);
-      setError("Ошибка при загрузке пользователей");
+      console.error('Ошибка получения пользователей:', error);
+      setError('Ошибка при загрузке пользователей');
     } finally {
       setLoading(false);
     }
@@ -90,20 +104,20 @@ function Admin() {
 
     try {
       await authorizedRequest({
-        method: "DELETE",
+        method: 'DELETE',
         url: `http://localhost:8000/api/admin/users/${confirmDelete.userId}/delete/`,
       });
-      setUsers(users.filter(user => user.id !== confirmDelete.userId));
-      showNotification('Пользователь успешно удалён.', 'success');
+      setUsers(users.filter((user) => user.id !== confirmDelete.userId));
+      showNotification('Пользователь успешно удалён.');
     } catch (error) {
-      console.error("Ошибка удаления пользователя:", error);
+      console.error('Ошибка удаления пользователя:', error);
       showNotification('Ошибка при удалении пользователя.', 'error');
     } finally {
       setConfirmDelete({ isVisible: false, userId: null });
     }
   };
 
-  // Аутентификация (вход)
+  // Вход пользователя
   const handleLogin = async (e) => {
     e.preventDefault();
     const { username, password } = formData;
@@ -115,13 +129,13 @@ function Admin() {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8000/api/login/', {
-        username,
-        password,
+      await authorizedRequest({
+        method: 'POST',
+        url: 'http://localhost:8000/api/login/',
+        data: { username, password },
       });
-      // Куки с токенами автоматически устанавливаются через сервер (HttpOnly)
       setIsAuthenticated(true);
-      showNotification('Вы успешно вошли в систему!', 'success');
+      showNotification('Вы успешно вошли в систему!');
     } catch (err) {
       setError('Ошибка аутентификации');
       console.error('Ошибка входа:', err);
@@ -132,10 +146,9 @@ function Admin() {
 
   // Выход пользователя
   const handleLogout = () => {
-    document.cookie = 'access_token=; Max-Age=0; path=/;';
-    document.cookie = 'refresh_token=; Max-Age=0; path=/;';
+    document.cookie = 'csrftoken=; Max-Age=0; path=/;';
     setIsAuthenticated(false);
-    showNotification('Вы успешно вышли из системы.', 'success');
+    showNotification('Вы успешно вышли из системы.');
   };
 
   // Загружаем пользователей при монтировании компонента, если пользователь аутентифицирован
@@ -172,7 +185,7 @@ function Admin() {
             />
           </div>
           <button type="submit" disabled={loading}>
-            {loading ? "Вход..." : "Войти"}
+            {loading ? 'Вход...' : 'Войти'}
           </button>
           {error && <p className="error-message">{error}</p>}
         </form>
@@ -184,8 +197,6 @@ function Admin() {
     <div className="admin-container">
       <h2>Управление пользователями</h2>
       <button onClick={handleLogout}>Выход</button>
-
-      {/* Уведомления */}
       {notification && (
         <div className={`notification ${notification.type}`}>
           {notification.message}
@@ -227,7 +238,7 @@ function Admin() {
           />
         </div>
         <button type="submit" disabled={loading}>
-          {loading ? "Регистрация..." : "Зарегистрировать"}
+          {loading ? 'Регистрация...' : 'Зарегистрировать'}
         </button>
       </form>
 
@@ -246,7 +257,7 @@ function Admin() {
             </tr>
           </thead>
           <tbody>
-            {users.map(user => (
+            {users.map((user) => (
               <tr key={user.id}>
                 <td>{user.username}</td>
                 <td>{user.fullname}</td>

@@ -26,6 +26,9 @@ from django.http import JsonResponse
 from datetime import timedelta
 from rest_framework.decorators import api_view
 
+
+from django.middleware.csrf import CsrfViewMiddleware
+
 User = get_user_model()
 
 # Регистрация пользователя
@@ -33,7 +36,8 @@ User = get_user_model()
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
-    data = json.loads(request.body)
+    # Получаем данные из запроса
+    data = request.data
     print("Received data:", data)
 
     username = data.get('username')
@@ -41,11 +45,24 @@ def register_user(request):
     email = data.get('email')
     password = data.get('password')
 
-    # Создание пользователя
-    user = User.objects.create_user(username=username, fullname=fullname, email=email, password=password)
-    print("User created successfully:", user)
+    # Валидация данных
+    if not username or not password or not email:
+        return JsonResponse({'message': 'Все поля обязательны!'}, status=400)
 
-    return JsonResponse({'message': 'Пользователь успешно зарегистрирован.'}, status=201)
+    # Создание пользователя через CustomUser
+    try:
+        # Создаём пользователя, используя кастомную модель
+        user = CustomUser.objects.create_user(
+            username=username,
+            fullname=fullname,
+            email=email,
+            password=password
+        )
+        print("User created successfully:", user)
+        return JsonResponse({'message': 'Пользователь успешно зарегистрирован.'}, status=201)
+    except Exception as e:
+        print("Error creating user:", e)
+        return JsonResponse({'message': 'Ошибка при создании пользователя.'}, status=500)
 
 
 # Вход пользователя
@@ -341,3 +358,10 @@ def test_csrf_view(request):
 @ensure_csrf_cookie
 def csrf(request):
     return JsonResponse({'csrfToken': get_token(request)})
+
+
+class CustomCsrfViewMiddleware(CsrfViewMiddleware):
+    def _reject(self, request, reason):
+        # Убедитесь, что причина ошибки логируется
+        print(f"CSRF rejected: {reason}")
+        return super()._reject(request, reason)

@@ -53,6 +53,10 @@ python manage.py migrate
 
 python manage.py createsuperuser
 
+name: postgres
+password: postgres
+email: mojohed@mail.ru
+
 7. Сборка статических файлов.
 
 python manage.py collectstatic

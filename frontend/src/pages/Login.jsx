@@ -5,6 +5,10 @@ import { useDispatch } from "react-redux";
 import { setAuthState } from "../store/authSlice";
 import "./Login.css";
 
+
+axios.defaults.withCredentials = true;
+
+
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -13,6 +17,21 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // Получение CSRF-токена из куков
+  const getCSRFToken = () => {
+    const name = "csrftoken";
+    const csrfToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith(`${name}=`))
+      ?.split("=")[1];
+
+    if (!csrfToken) {
+      console.error("CSRF токен не найден в куках!");
+    }
+
+    return csrfToken;
+  };
+
   // Обработка отправки формы
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,10 +39,15 @@ const Login = () => {
     setError("");
 
     try {
+      const csrfToken = getCSRFToken();
+
       const response = await axios.post(
         "http://localhost:8000/api/login/",
         { username, password },
         {
+          headers: {
+            "X-CSRFToken": csrfToken, // Добавление CSRF-токена
+          },
           withCredentials: true, // Включаем передачу куков с запросом
         }
       );
@@ -67,23 +91,23 @@ const Login = () => {
       {error && <div className="message error">{error}</div>}
 
       <form onSubmit={handleSubmit} className="login-form">
-        <div>
+        <div className="input-container">
           <input
             type="text"
             placeholder="Логин"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="input-field"
+            className={`input-field ${error ? "input-error" : ""}`}
             required
           />
         </div>
-        <div>
+        <div className="input-container">
           <input
             type="password"
             placeholder="Пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="input-field"
+            className={`input-field ${error ? "input-error" : ""}`}
             required
           />
         </div>
