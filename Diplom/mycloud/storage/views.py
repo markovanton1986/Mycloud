@@ -36,7 +36,6 @@ User = get_user_model()
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
-    # Получаем данные из запроса
     data = request.data
     print("Received data:", data)
 
@@ -45,13 +44,10 @@ def register_user(request):
     email = data.get('email')
     password = data.get('password')
 
-    # Валидация данных
     if not username or not password or not email:
         return JsonResponse({'message': 'Все поля обязательны!'}, status=400)
 
-    # Создание пользователя через CustomUser
     try:
-        # Создаём пользователя, используя кастомную модель
         user = CustomUser.objects.create_user(
             username=username,
             fullname=fullname,
@@ -177,16 +173,12 @@ def download_file(request, file_id):
 @permission_classes([IsAuthenticated])
 def generate_file_link(request, file_id):
     try:
-        # Получаем файл, принадлежащий текущему пользователю
         file = File.objects.get(id=file_id, user=request.user)
 
-        # Печатаем URL для отладки
         print(f"File URL: {file.file.url}")
 
-        # Генерируем корректную публичную ссылку
-        file_url = file.file.url  # Используем `.url` для получения правильного пути
+        file_url = file.file.url
 
-        # Возвращаем ссылку в ответе
         return JsonResponse({'link': file_url})
 
     except File.DoesNotExist:
@@ -203,7 +195,6 @@ def refresh_token(request):
         refresh = RefreshToken(refresh_token)
         access_token = str(refresh.access_token)
 
-        # Отправка только нового access token в response с cookies
         response = JsonResponse({'access': access_token})
         response.set_cookie('access_token', access_token, httponly=True, secure=True, samesite='Strict')
         return response
@@ -214,7 +205,6 @@ def refresh_token(request):
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def list_users(request):
-    # Получаем всех пользователей
     users = CustomUser.objects.all()
     serializer = CustomUserSerializer(users, many=True)
     return Response(serializer.data)
@@ -225,14 +215,11 @@ def delete_user(request, user_id):
     try:
         user = CustomUser.objects.get(id=user_id)
 
-        # Дополнительная проверка (например, для запрета удалять самого себя)
         if request.user == user:
             return Response({'error': 'Вы не можете удалить себя.'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Удаление всех файлов пользователя, если это необходимо
         File.objects.filter(user=user).delete()
 
-        # Удаление пользователя
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -242,7 +229,7 @@ def delete_user(request, user_id):
 
 @api_view(['GET'])
 def get_user_info(request):
-    user = request.user  # Получаем текущего авторизованного пользователя
+    user = request.user
     serializer = UserSerializer(user)
     return Response(serializer.data)
 
@@ -268,7 +255,7 @@ def validate_password(password):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_info(request):
-    user = request.user  # Получаем текущего авторизованного пользователя
+    user = request.user
     serializer = UserSerializer(user)
     return Response(serializer.data)
 
@@ -309,28 +296,23 @@ def update_comment(request, file_id):
     try:
         file = File.objects.get(id=file_id)
 
-        # Проверка прав на редактирование комментария
         if file.user != request.user:
             return Response({'detail': 'У вас нет прав для редактирования комментария этого файла.'},
                              status=status.HTTP_403_FORBIDDEN)
 
-        # Проверка наличия нового комментария
         if 'comment' in request.data:
             new_comment = request.data['comment']
 
             if not new_comment:
                 return Response({'detail': 'Комментарий не может быть пустым.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Дополнительная проверка на длину комментария
             if len(new_comment) > 500:
                 return Response({'detail': 'Комментарий не может быть длиннее 500 символов.'},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            # Обновляем комментарий
             file.comment = new_comment
             file.save()
 
-            # Сериализуем данные и возвращаем их в ответе
             serializer = FileSerializer(file)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -345,14 +327,11 @@ def update_comment(request, file_id):
 @csrf_protect
 def test_csrf_view(request):
     if request.method == "POST":
-        # Если CSRF токен валиден, возвращаем успешный ответ
         return JsonResponse({"message": "CSRF token is valid!"}, status=200)
     elif request.method == "GET":
-        # Возвращаем CSRF токен (если нужно)
         csrf_token = get_token(request)
         return JsonResponse({"csrf_token": csrf_token}, status=200)
     else:
-        # Неподдерживаемый метод
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
 @ensure_csrf_cookie
@@ -362,6 +341,5 @@ def csrf(request):
 
 class CustomCsrfViewMiddleware(CsrfViewMiddleware):
     def _reject(self, request, reason):
-        # Убедитесь, что причина ошибки логируется
         print(f"CSRF rejected: {reason}")
         return super()._reject(request, reason)
