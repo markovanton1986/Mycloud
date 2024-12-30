@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Импортируем хук useNavigate
+import { useNavigate } from 'react-router-dom';
 import './UserPage.css';
 
 function UserPage() {
@@ -32,19 +32,19 @@ function UserPage() {
       const csrfToken = getCSRFToken();
       const headers = {
         ...config.headers,
-        'X-CSRFToken': csrfToken,  // Добавляем CSRF-токен
+        'X-CSRFToken': csrfToken,
       };
 
       const response = await axios({
         ...config,
-        withCredentials: true,  // Передача куков
+        withCredentials: true,
         headers,
       });
       return response;
     } catch (error) {
       if (error.response?.status === 401) {
         console.log("Необходима аутентификация. Перенаправляем на страницу входа...");
-        navigate('/login');  // Перенаправление на страницу входа
+        navigate('/login');
       } else if (error.response?.status === 403) {
         console.log("Доступ запрещён. Проверьте CSRF или права доступа.");
       }
@@ -191,8 +191,8 @@ function UserPage() {
         navigator.clipboard.writeText(fullUrl)
           .then(() => {
             console.log("Ссылка скопирована в буфер обмена!");
-            setLinkCopied(true);  // Устанавливаем состояние, что ссылка скопирована
-            setTimeout(() => setLinkCopied(false), 3000);  // Сбрасываем состояние через 3 секунды
+            setLinkCopied(true);
+            setTimeout(() => setLinkCopied(false), 3000);
           })
           .catch((error) => {
             console.error("Ошибка при копировании ссылки:", error);

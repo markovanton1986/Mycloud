@@ -122,7 +122,8 @@ AUTH_USER_MODEL = 'storage.CustomUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication', # Если убрать, то ломается Логин и Админ
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
@@ -197,3 +198,7 @@ AUTHENTICATION_BACKENDS = [
 
 BASE_URL = 'http://localhost:3000'
 
+
+# это я добавил 30.12.24
+SESSION_COOKIE_NAME = "sessionid"  # Это имя cookie с сессионным ID
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Используем сессии в базе данных

@@ -2,10 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     isAuthenticated: false,
-    user: null, // Здесь будет объект с данными пользователя
+    user: null,
 };
 
-// Проверка локального хранилища для начального состояния
 const storedUser = localStorage.getItem("authUser");
 if (storedUser) {
     const parsedUser = JSON.parse(storedUser);

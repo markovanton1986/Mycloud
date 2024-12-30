@@ -59,7 +59,6 @@
     background-color: #0056b3;
 }
 
-/* Сообщение об успехе регистрации */
 .register-success {
     color: #28a745;
     text-align: center;
@@ -75,19 +74,16 @@
     text-decoration: underline;
 }
 
-/* Сообщения об ошибках */
 .error-message {
     color: #3f71dc;
     font-size: 14px;
     margin-top: 5px;
 }
 
-/* Добавление отступов для отдельных полей */
 .register-form div {
     position: relative;
 }
 
-/* Стили для сообщений о ошибках поля (опционально) */
 .register-form .error-message {
     font-size: 12px;
     position: absolute;
@@ -97,7 +93,6 @@
     margin-top: 5px;
 }
 
-/* Каскадное оформление для мобильных устройств */
 @media (max-width: 600px) {
     .register-container {
         padding: 15px;

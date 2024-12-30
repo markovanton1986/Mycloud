@@ -17,7 +17,6 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Получение CSRF-токена из куков
   const getCSRFToken = () => {
     const name = "csrftoken";
     const csrfToken = document.cookie
@@ -32,7 +31,6 @@ const Login = () => {
     return csrfToken;
   };
 
-  // Обработка отправки формы
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -46,15 +44,14 @@ const Login = () => {
         { username, password },
         {
           headers: {
-            "X-CSRFToken": csrfToken, // Добавление CSRF-токена
+            "X-CSRFToken": csrfToken,
           },
-          withCredentials: true, // Включаем передачу куков с запросом
+          withCredentials: true,
         }
       );
 
       console.log("Успешный вход:", response.data);
 
-      // Установка состояния авторизации в Redux
       dispatch(
         setAuthState({
           isAuthenticated: true,
@@ -65,7 +62,6 @@ const Login = () => {
         })
       );
 
-      // Перенаправление на соответствующую страницу
       if (response.data.is_staff) {
         console.log("Перенаправление на Admin");
         navigate("/Admin");

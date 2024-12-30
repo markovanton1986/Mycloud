@@ -1,37 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import './Admin.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./Admin.css";
 
-function Admin() {
+const Admin = () => {
   const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    email: '',
-    fullname: '',
+    username: "",
+    password: "",
+    email: "",
+    fullname: "",
   });
   const [error, setError] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ isVisible: false, userId: null });
 
-  // Уведомления
-  const showNotification = (message, type = 'success') => {
+  const showNotification = (message, type = "success") => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // Получение CSRF-токена из куков
   const getCSRFToken = () => {
-    const name = 'csrftoken';
+    const name = "csrftoken";
     return document.cookie
-      .split('; ')
+      .split("; ")
       .find((row) => row.startsWith(`${name}=`))
-      ?.split('=')[1];
+      ?.split("=")[1];
   };
 
-  // Упрощённый запрос с учётом CSRF и куков
   const authorizedRequest = async (config) => {
     try {
       const csrfToken = getCSRFToken();
@@ -39,164 +35,85 @@ function Admin() {
         ...config,
         headers: {
           ...config.headers,
-          'X-CSRFToken': csrfToken,
+          "X-CSRFToken": csrfToken,
         },
         withCredentials: true,
       });
       return response;
     } catch (error) {
-      if (error.response?.status === 401) {
-        alert('Необходима аутентификация. Перенаправляем на страницу входа...');
-        window.location.href = '/login';
-      }
+      console.error("Ошибка запроса:", error);
       throw error;
     }
   };
 
-  // Регистрация пользователя
   const handleRegister = async (e) => {
     e.preventDefault();
     const { username, password, email, fullname } = formData;
 
     if (!username || !password || !email || !fullname) {
-      setError('Все поля обязательны для заполнения!');
+      setError("Все поля обязательны для заполнения!");
       return;
     }
 
     setLoading(true);
     try {
       await authorizedRequest({
-        method: 'POST',
-        url: 'http://localhost:8000/api/register/',
+        method: "POST",
+        url: "http://localhost:8000/api/register/",
         data: { username, password, email, fullname },
       });
-      showNotification('Пользователь успешно зарегистрирован!');
-      setFormData({ username: '', password: '', email: '', fullname: '' });
-      fetchUsers(); // Обновляем список пользователей после регистрации
+      showNotification("Пользователь успешно зарегистрирован!");
+      setFormData({ username: "", password: "", email: "", fullname: "" });
+      fetchUsers();
     } catch (err) {
-      setError('Ошибка при регистрации пользователя');
-      console.error('Ошибка регистрации:', err);
+      setError("Ошибка при регистрации пользователя");
+      console.error("Ошибка регистрации:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Получение списка пользователей
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const response = await authorizedRequest({
-        method: 'GET',
-        url: 'http://localhost:8000/api/admin/users/',
+        method: "GET",
+        url: "http://localhost:8000/api/admin/users/",
       });
       setUsers(response.data || []);
     } catch (error) {
-      console.error('Ошибка получения пользователей:', error);
-      setError('Ошибка при загрузке пользователей');
+      console.error("Ошибка получения пользователей:", error);
+      setError("Ошибка при загрузке пользователей");
     } finally {
       setLoading(false);
     }
   };
 
-  // Удаление пользователя
   const handleDeleteUser = async () => {
     if (!confirmDelete.userId) return;
 
     try {
       await authorizedRequest({
-        method: 'DELETE',
+        method: "DELETE",
         url: `http://localhost:8000/api/admin/users/${confirmDelete.userId}/delete/`,
       });
       setUsers(users.filter((user) => user.id !== confirmDelete.userId));
-      showNotification('Пользователь успешно удалён.');
+      showNotification("Пользователь успешно удалён.");
     } catch (error) {
-      console.error('Ошибка удаления пользователя:', error);
-      showNotification('Ошибка при удалении пользователя.', 'error');
+      console.error("Ошибка удаления пользователя:", error);
+      showNotification("Ошибка при удалении пользователя.", "error");
     } finally {
       setConfirmDelete({ isVisible: false, userId: null });
     }
   };
 
-  // Вход пользователя
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const { username, password } = formData;
-
-    if (!username || !password) {
-      setError('Пожалуйста, заполните все поля.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await authorizedRequest({
-        method: 'POST',
-        url: 'http://localhost:8000/api/login/',
-        data: { username, password },
-      });
-      setIsAuthenticated(true);
-      showNotification('Вы успешно вошли в систему!');
-    } catch (err) {
-      setError('Ошибка аутентификации');
-      console.error('Ошибка входа:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Выход пользователя
-  const handleLogout = () => {
-    document.cookie = 'csrftoken=; Max-Age=0; path=/;';
-    setIsAuthenticated(false);
-    showNotification('Вы успешно вышли из системы.');
-  };
-
-  // Загружаем пользователей при монтировании компонента, если пользователь аутентифицирован
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchUsers();
-    }
-  }, [isAuthenticated]);
-
-  if (!isAuthenticated) {
-    return (
-      <div>
-        <h2>Вход в систему</h2>
-        {notification && (
-          <div className={`notification ${notification.type}`}>
-            {notification.message}
-          </div>
-        )}
-        <form onSubmit={handleLogin}>
-          <div>
-            <label>Имя пользователя:</label>
-            <input
-              type="text"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-            />
-          </div>
-          <div>
-            <label>Пароль:</label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            />
-          </div>
-          <button type="submit" disabled={loading}>
-            {loading ? 'Вход...' : 'Войти'}
-          </button>
-          {error && <p className="error-message">{error}</p>}
-        </form>
-      </div>
-    );
-  }
+    fetchUsers();
+  }, []);
 
   return (
     <div className="admin-container">
       <h2>Управление пользователями</h2>
-      <button onClick={handleLogout}>Выход</button>
       {notification && (
         <div className={`notification ${notification.type}`}>
           {notification.message}
@@ -238,7 +155,7 @@ function Admin() {
           />
         </div>
         <button type="submit" disabled={loading}>
-          {loading ? 'Регистрация...' : 'Зарегистрировать'}
+          {loading ? "Регистрация..." : "Зарегистрировать"}
         </button>
       </form>
 
@@ -287,6 +204,6 @@ function Admin() {
       )}
     </div>
   );
-}
+};
 
 export default Admin;

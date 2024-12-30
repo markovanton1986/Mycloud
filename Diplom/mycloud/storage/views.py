@@ -29,12 +29,16 @@ from rest_framework.decorators import api_view
 
 from django.middleware.csrf import CsrfViewMiddleware
 
+
+
+
+
 User = get_user_model()
 
 # Регистрация пользователя
 @csrf_exempt
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([AllowAny]) # если убрать, то ничего не меняется
 def register_user(request):
     data = request.data
     print("Received data:", data)
@@ -343,3 +347,16 @@ class CustomCsrfViewMiddleware(CsrfViewMiddleware):
     def _reject(self, request, reason):
         print(f"CSRF rejected: {reason}")
         return super()._reject(request, reason)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_users(request):
+    # Убедитесь, что запрос сделан администратором
+    if request.user.is_staff:
+        users = CustomUser.objects.all().values("id", "username", "email")
+        return Response(users)
+    return Response({"detail": "Доступ запрещён"}, status=403)
+
+

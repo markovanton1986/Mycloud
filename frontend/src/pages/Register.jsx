@@ -5,7 +5,8 @@ import { useDispatch } from "react-redux";
 import { setAuthState } from "../store/authSlice";
 import "./Register.css";
 
-axios.defaults.withCredentials = true;
+
+axios.defaults.withCredentials = false;
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -19,51 +20,29 @@ const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Получение CSRF-токена из куков
-  const getCSRFToken = () => {
-    const name = "csrftoken";
-    const csrfToken = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith(`${name}=`))
-      ?.split("=")[1];
-
-    if (!csrfToken) {
-      console.error("CSRF токен не найден в куках!");
-    }
-
-    return csrfToken;
-  };
-
-  // Обработка изменений в форме
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Обработка отправки формы
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrors({});
 
     try {
-      const csrfToken = getCSRFToken();
-
       const response = await axios.post(
         "http://localhost:8000/api/register/",
         formData,
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken, // Добавление CSRF-токена
           },
-          withCredentials: true, // Включаем передачу куков с запросом
         }
       );
 
       if (response.status === 201) {
         console.log("Регистрация прошла успешно!");
-        // Установка состояния авторизации в Redux
         dispatch(
           setAuthState({
             isAuthenticated: true,

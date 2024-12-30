@@ -1,7 +1,8 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/authSlice";
+import Cookies from "js-cookie";
 import "./Header.css";
 
 const Header = () => {
@@ -9,13 +10,16 @@ const Header = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
+  // Получаем роль пользователя из cookies
+  const userRole = Cookies.get("userRole") || user?.role; // с использованием cookies
+
   const handleLogout = () => {
-    // Сброс состояния в Redux
     dispatch(logout());
 
     // Удаление токенов из cookies
-    document.cookie = "access_token=; Max-Age=0; path=/;";
-    document.cookie = "refresh_token=; Max-Age=0; path=/;";
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    Cookies.remove("userRole");
 
     // Перенаправление на страницу входа
     navigate("/login");
@@ -36,6 +40,19 @@ const Header = () => {
           {isAuthenticated ? (
             <>
               <span className="welcome-text">Добро пожаловать, {user.username}!</span>
+
+              {/* Условие для отображения кнопки в зависимости от роли */}
+              {userRole === "Admin" ? (
+                <Link to="/Admin" className="auth-button">
+                  Управление пользователями
+                </Link>
+              ) : (
+                <Link to="/UserPage" className="auth-button">
+                  Мои файлы
+                </Link>
+              )}
+
+              {/* Кнопка для выхода */}
               <button onClick={handleLogout} className="auth-button">
                 Выйти
               </button>
