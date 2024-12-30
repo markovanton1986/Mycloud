@@ -6,7 +6,7 @@ import { setAuthState } from "../store/authSlice";
 import "./Register.css";
 
 
-axios.defaults.withCredentials = false;
+axios.defaults.withCredentials = true;
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -43,17 +43,7 @@ const Register = () => {
 
       if (response.status === 201) {
         console.log("Регистрация прошла успешно!");
-        dispatch(
-          setAuthState({
-            isAuthenticated: true,
-            user: {
-              username: formData.username,
-              isStaff: false,
-            },
-          })
-        );
-
-        navigate("/UserPage");
+        navigate("/login");
       }
     } catch (error) {
       console.error("Ошибка регистрации:", error);

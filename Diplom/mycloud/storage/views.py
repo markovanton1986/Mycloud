@@ -28,7 +28,7 @@ from rest_framework.decorators import api_view
 
 
 from django.middleware.csrf import CsrfViewMiddleware
-
+from django.utils.decorators import method_decorator
 
 
 
@@ -36,9 +36,9 @@ from django.middleware.csrf import CsrfViewMiddleware
 User = get_user_model()
 
 # Регистрация пользователя
-@csrf_exempt
+@method_decorator(csrf_exempt, name='dispatch')
 @api_view(['POST'])
-@permission_classes([AllowAny]) # если убрать, то ничего не меняется
+@permission_classes([AllowAny])
 def register_user(request):
     data = request.data
     print("Received data:", data)
