@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { setAuthState } from './store/authSlice';
 
 import Navbar from './components/Navbar';
@@ -20,44 +20,52 @@ import './App.css';
 
 const App = () => {
     const dispatch = useDispatch();
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
 
     useEffect(() => {
-        const isAuthenticated = document.cookie.includes('sessionid');
-        if (isAuthenticated) {
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (user) {
-                dispatch(setAuthState({ isAuthenticated: true, user }));
-            }
+        // При загрузке приложения, проверим если пользователь есть в localStorage
+        const storedUser = localStorage.getItem("authUser");
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            dispatch(setAuthState({ isAuthenticated: true, user: parsedUser }));
+        } else {
+            dispatch(setAuthState({ isAuthenticated: false, user: null }));
         }
     }, [dispatch]);
 
     return (
         <Router>
             <div className="app">
-                {/* Шапка */}
                 <Header />
-
-                {/* Навигация */}
                 <Navbar />
 
-                {/* Основной контент */}
                 <main className="main-content">
                     <Routes>
                         <Route path="/" element={<Home />} />
+                        <Route path="/files/:userId" element={<FileStorage />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/login" element={<Login />} />
-                        <Route path="/admin" element={<Admin />} />
-                        <Route path="/UserPage" element={<UserPage />} />
-                        <Route path="/files" element={<FileStorage />} />
-                        <Route path="/upload" element={<LoadingFile />} />
+                        <Route
+                            path="/admin"
+                            element={isAuthenticated ? <Admin /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/UserPage"
+                            element={isAuthenticated ? <UserPage /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/files"
+                            element={isAuthenticated ? <FileStorage /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/upload"
+                            element={isAuthenticated ? <LoadingFile /> : <Navigate to="/login" />}
+                        />
                         <Route path="/logout" element={<Logout />} />
-
-                        {/* Редирект на страницу файлов, если путь не найден */}
                         <Route path="*" element={<Navigate to="/files" />} />
                     </Routes>
                 </main>
 
-                {/* Подвал */}
                 <Footer />
             </div>
         </Router>

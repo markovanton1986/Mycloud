@@ -1,7 +1,10 @@
 from django.urls import path
 from . import views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import register_user, test_csrf_view
+from .views import register_user, test_csrf_view, delete_user_file
+from .views import current_user
+from .views import update_user_status
+from .views import UserFilesView
 
 urlpatterns = [
     # Аутентификация и регистрация
@@ -15,6 +18,7 @@ urlpatterns = [
     # Административный интерфейс
     path('admin/users/', views.list_users, name='list_users'),
     path('admin/users/<int:user_id>/delete/', views.delete_user, name='delete_user'),
+    path('admin/users/<int:user_id>/update-status/', update_user_status, name='update_user_status'),
 
     # Файловое хранилище
 
@@ -29,5 +33,10 @@ urlpatterns = [
 
 
     path('test-csrf/', test_csrf_view, name='test_csrf'),
-
+    path('user/', current_user, name='current_user'),
+    path('users/<int:user_id>/files/', UserFilesView.as_view(), name='user-files'),
+    path('users/<int:user_id>/files/<int:file_id>/delete/', delete_user_file, name='delete_user_file'),
+    path('delete-file/<int:file_id>/', views.delete_file, name='delete_file'),  # Для пользователей
+    path('delete-user-file/<int:user_id>/<int:file_id>/', views.delete_user_file, name='delete_user_file'),
+    # Для администраторов
 ]

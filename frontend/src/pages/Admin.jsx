@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "./Admin.css";
 
+
 const Admin = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     username: "",
@@ -107,6 +110,25 @@ const Admin = () => {
     }
   };
 
+  const toggleStaffStatus = async (userId, isStaff) => {
+    try {
+      await authorizedRequest({
+        method: "PATCH",
+        url: `http://localhost:8000/api/admin/users/${userId}/update-status/`,
+        data: { is_staff: !isStaff },
+      });
+      setUsers(
+        users.map((user) =>
+          user.id === userId ? { ...user, is_staff: !isStaff } : user
+        )
+      );
+      showNotification("Статус сотрудника обновлён.");
+    } catch (error) {
+      console.error("Ошибка изменения статуса сотрудника:", error);
+      showNotification("Ошибка при обновлении статуса.", "error");
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -170,6 +192,8 @@ const Admin = () => {
               <th>Имя пользователя</th>
               <th>Полное имя</th>
               <th>Email</th>
+              <th>Администратор</th>
+              <th>Файлы</th>
               <th>Действия</th>
             </tr>
           </thead>
@@ -179,6 +203,20 @@ const Admin = () => {
                 <td>{user.username}</td>
                 <td>{user.fullname}</td>
                 <td>{user.email}</td>
+                <td>
+                  <button
+                    onClick={() => toggleStaffStatus(user.id, user.is_staff)}
+                  >
+                    {user.is_staff ? "Снять" : "Назначить"}
+                  </button>
+                </td>
+                <td>
+                  <span>{user.file_count} файл(а)</span>, <span>{user.total_size} КB</span>
+                  <br />
+                  <button onClick={() => navigate(`/files/${user.id}`)}>
+                    Управление файлами
+                  </button>
+                </td>
                 <td>
                   <button onClick={() => setConfirmDelete({ isVisible: true, userId: user.id })}>
                     Удалить
@@ -190,7 +228,6 @@ const Admin = () => {
         </table>
       )}
 
-      {/* Модальное окно подтверждения удаления */}
       {confirmDelete.isVisible && (
         <div className="modal">
           <div className="modal-content">

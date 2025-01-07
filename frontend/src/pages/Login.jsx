@@ -57,12 +57,13 @@ const Login = () => {
           isAuthenticated: true,
           user: {
             username: response.data.username,
-            isStaff: response.data.is_staff,
+            role: response.data.role, // получаем роль
           },
         })
       );
 
-      if (response.data.is_staff) {
+      // Проверка роли, вместо is_staff используем role
+      if (response.data.role === "admin") {
         console.log("Перенаправление на Admin");
         navigate("/Admin");
       } else {

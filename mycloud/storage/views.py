@@ -4,6 +4,7 @@ from venv import logger
 from django.contrib.auth import authenticate, get_user_model
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, status
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from django.http import JsonResponse
@@ -18,7 +19,7 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
-
+from django.contrib.auth.decorators import login_required
 
 
 from django.contrib.auth import authenticate, login
@@ -76,9 +77,14 @@ def login_user(request):
     if user:
         login(request, user)
 
+        # Получаем роль пользователя (используем is_staff для администраторов)
+        role = "admin" if user.is_staff else "user"
+
         response = JsonResponse({
             "message": "Вход выполнен успешно",
             "is_staff": user.is_staff,
+            "role": role,  # передаем правильную роль
+            "username": user.username,
         })
 
         response.set_cookie(
@@ -141,15 +147,15 @@ def upload_file(request):
 
 
 # Удаление файла
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def delete_file(request, file_id):
-    try:
-        file = File.objects.get(id=file_id, user=request.user)
-        file.delete()
-        return JsonResponse({'message': 'Файл удален.'})
-    except File.DoesNotExist:
-        return JsonResponse({'error': 'Файл не найден.'}, status=404)
+# @api_view(['DELETE'])
+# @permission_classes([IsAuthenticated])
+# def delete_file(request, file_id):
+#     try:
+#         file = File.objects.get(id=file_id, user=request.user)
+#         file.delete()
+#         return JsonResponse({'message': 'Файл удален.'})
+#     except File.DoesNotExist:
+#         return JsonResponse({'error': 'Файл не найден.'}, status=404)
 
 
 # Скачивание файла
@@ -358,5 +364,83 @@ def get_users(request):
         users = CustomUser.objects.all().values("id", "username", "email")
         return Response(users)
     return Response({"detail": "Доступ запрещён"}, status=403)
+
+
+@login_required
+def current_user(request):
+    user = request.user
+    return JsonResponse({
+        'username': user.username,
+        'email': user.email,
+        'is_staff': user.is_staff,
+    })
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAdminUser])
+def update_user_status(request, user_id):
+    """
+    Обновление статуса администратора (is_staff) для пользователя.
+    """
+    try:
+        user = CustomUser.objects.get(id=user_id)
+
+        if user == request.user:
+            return Response({'error': 'Вы не можете изменить собственный статус.'}, status=status.HTTP_403_FORBIDDEN)
+
+        is_staff = request.data.get("is_staff")
+
+        if is_staff is not None:
+            user.is_staff = is_staff
+            user.save()
+            return Response({'message': f"Статус пользователя {user.username} обновлен."}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Параметр is_staff не предоставлен.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    except CustomUser.DoesNotExist:
+        return Response({'error': 'Пользователь не найден.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UserFilesView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, user_id):
+        files = File.objects.filter(user_id=user_id).values("id", "name", "size", "uploaded_at")
+        return Response(files)
+
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])  # Администратор имеет доступ
+def delete_user_file(request, user_id, file_id):
+    """
+    Администратор может удалять файлы других пользователей.
+    :param user_id: ID пользователя, чьи файлы нужно удалить.
+    :param file_id: ID файла, который нужно удалить.
+    """
+    try:
+        file = File.objects.get(id=file_id, user_id=user_id)  # Ищем файл по ID пользователя и ID файла
+        file.delete()
+        return Response({"message": "Файл удалён."}, status=204)
+    except File.DoesNotExist:
+        return Response({"error": "Файл не найден."}, status=404)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])  # Только авторизованные пользователи могут удалить свои файлы
+def delete_file(request, file_id):
+    """
+    Пользователь может удалить только свои файлы.
+    :param file_id: ID файла, который нужно удалить.
+    """
+    try:
+        # Ищем файл, который принадлежит текущему пользователю
+        file = File.objects.get(id=file_id, user=request.user)
+        file.delete()
+        return JsonResponse({'message': 'Файл удален.'})
+    except File.DoesNotExist:
+        return JsonResponse({'error': 'Файл не найден.'}, status=404)
 
 

@@ -10,18 +10,15 @@ const Header = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
-  // Получаем роль пользователя из cookies
-  const userRole = Cookies.get("userRole") || user?.role; // с использованием cookies
+  const userRole = user?.role;
 
   const handleLogout = () => {
     dispatch(logout());
 
-    // Удаление токенов из cookies
     Cookies.remove("access_token");
     Cookies.remove("refresh_token");
     Cookies.remove("userRole");
 
-    // Перенаправление на страницу входа
     navigate("/login");
   };
 
@@ -42,7 +39,7 @@ const Header = () => {
               <span className="welcome-text">Добро пожаловать, {user.username}!</span>
 
               {/* Условие для отображения кнопки в зависимости от роли */}
-              {userRole === "Admin" ? (
+              {userRole === "admin" ? (
                 <Link to="/Admin" className="auth-button">
                   Управление пользователями
                 </Link>

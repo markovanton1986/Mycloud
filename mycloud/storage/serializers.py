@@ -31,6 +31,8 @@ class FileSerializer(serializers.ModelSerializer):
         model = File
         fields = ['id', 'name', 'size', 'uploaded_at', 'file', 'comment']
 
+
+
     def validate_file(self, value):
         # Ограничиваем размер файла 10 MB
         if value.size > 10 * 1024 * 1024:  # 10 MB max
@@ -42,10 +44,18 @@ class FileSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
     fullname = serializers.CharField(required=False, allow_blank=True)
+    file_count = serializers.SerializerMethodField()
+    total_size = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'fullname', 'email', 'is_staff']
+        fields = ['id', 'username', 'fullname', 'email', 'is_staff', 'file_count', 'total_size']
+
+    def get_file_count(self, obj):
+        return obj.file_count()
+
+    def get_total_size(self, obj):
+        return obj.total_file_size()
 
     def create(self, validated_data):
         return CustomUser.objects.create(**validated_data)

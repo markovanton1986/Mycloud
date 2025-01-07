@@ -1,5 +1,6 @@
 import os
 
+from django.db.models import Sum
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -16,6 +17,8 @@ class CustomUser(AbstractUser):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
+    role = models.CharField(max_length=50, choices=[('admin', 'Admin'), ('user', 'User')], default='user')
+
     def __str__(self):
         return self.username
 
@@ -25,6 +28,22 @@ class CustomUser(AbstractUser):
     @property
     def is_admin(self):
         return self.is_staff
+
+        # Укажите поле для использования в качестве идентификатора
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
+
+    def file_count(self):
+        # Предположим, у вас есть модель File с ForeignKey на пользователя
+        return self.files.count()
+
+    def total_file_size(self):
+        # Предположим, у модели File есть поле size
+        return self.files.aggregate(total_size=Sum('size'))['total_size'] or 0
+
+
+
 
 
 # Модель для хранения файлов
@@ -68,6 +87,9 @@ class File(models.Model):
         """
         return os.path.join(settings.MEDIA_URL, self.file.name)
 
+
+
+
 # Модель для истории скачивания файлов
 class FileDownloadHistory(models.Model):
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name="download_history")
@@ -76,3 +98,5 @@ class FileDownloadHistory(models.Model):
 
     def __str__(self):
         return f"Download of {self.file.original_name} by {self.user.username} on {self.download_date}"
+
+

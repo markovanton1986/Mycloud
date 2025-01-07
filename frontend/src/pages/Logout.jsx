@@ -1,21 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import axios from "axios";
+import { logout } from "../store/authSlice";
 
 const Logout = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const logoutUser = async () => {
             try {
-                await axios.post("http://localhost:8000/api/logout/", {}, {
-                    withCredentials: true,
-                });
+                // Отправляем запрос на выход с сервера
+                await axios.post("http://localhost:8000/api/logout/", {}, { withCredentials: true });
+
+                // Диспатчим logout в Redux
+                dispatch(logout());
+
+                // Удаляем данные пользователя (если они есть) из sessionStorage или localStorage
+                sessionStorage.removeItem("user");
+                localStorage.removeItem("user"); // Если это необходимо
 
                 setLoading(false);
 
+                // Перенаправление на страницу входа
                 navigate("/login");
             } catch (error) {
                 setLoading(false);
@@ -25,7 +35,7 @@ const Logout = () => {
         };
 
         logoutUser();
-    }, [navigate]);
+    }, [navigate, dispatch]);
 
     return (
         <div style={{ textAlign: "center", padding: "20px" }}>
