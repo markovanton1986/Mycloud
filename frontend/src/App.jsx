@@ -23,7 +23,6 @@ const App = () => {
     const { isAuthenticated, user } = useSelector((state) => state.auth);
 
     useEffect(() => {
-        // При загрузке приложения, проверим если пользователь есть в localStorage
         const storedUser = localStorage.getItem("authUser");
         if (storedUser) {
             const parsedUser = JSON.parse(storedUser);

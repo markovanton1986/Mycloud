@@ -34,10 +34,8 @@ class FileSerializer(serializers.ModelSerializer):
 
 
     def validate_file(self, value):
-        # Ограничиваем размер файла 10 MB
         if value.size > 10 * 1024 * 1024:  # 10 MB max
             raise serializers.ValidationError("Файл слишком большой. Максимальный размер: 10 МБ.")
-        # Ограничиваем типы файлов
         if not value.name.lower().endswith(('.jpg', '.png', '.pdf', '.docx', '.xlsx')):
             raise serializers.ValidationError("Неверный формат файла. Разрешены только изображения и документы.")
         return value

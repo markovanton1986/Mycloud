@@ -8,7 +8,6 @@ from django.conf import settings
 import uuid
 
 
-# Расширенная модель пользователя
 class CustomUser(AbstractUser):
     id = models.AutoField(primary_key=True, unique=True)
     username = models.CharField(max_length=50, unique=True)
@@ -29,24 +28,19 @@ class CustomUser(AbstractUser):
     def is_admin(self):
         return self.is_staff
 
-        # Укажите поле для использования в качестве идентификатора
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
     def file_count(self):
-        # Предположим, у вас есть модель File с ForeignKey на пользователя
         return self.files.count()
 
     def total_file_size(self):
-        # Предположим, у модели File есть поле size
         return self.files.aggregate(total_size=Sum('size'))['total_size'] or 0
 
 
 
 
-
-# Модель для хранения файлов
 class File(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     user = models.ForeignKey(

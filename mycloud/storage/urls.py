@@ -36,7 +36,6 @@ urlpatterns = [
     path('user/', current_user, name='current_user'),
     path('users/<int:user_id>/files/', UserFilesView.as_view(), name='user-files'),
     path('users/<int:user_id>/files/<int:file_id>/delete/', delete_user_file, name='delete_user_file'),
-    path('delete-file/<int:file_id>/', views.delete_file, name='delete_file'),  # Для пользователей
+    path('delete-file/<int:file_id>/', views.delete_file, name='delete_file'), 
     path('delete-user-file/<int:user_id>/<int:file_id>/', views.delete_user_file, name='delete_user_file'),
-    # Для администраторов
 ]

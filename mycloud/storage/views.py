@@ -77,13 +77,12 @@ def login_user(request):
     if user:
         login(request, user)
 
-        # Получаем роль пользователя (используем is_staff для администраторов)
         role = "admin" if user.is_staff else "user"
 
         response = JsonResponse({
             "message": "Вход выполнен успешно",
             "is_staff": user.is_staff,
-            "role": role,  # передаем правильную роль
+            "role": role, 
             "username": user.username,
         })
 
@@ -110,7 +109,7 @@ def logout_user(request):
     return response
 
 
-# Список файлов (защищенный доступ)
+# Список файлов
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_files(request):
@@ -359,7 +358,6 @@ class CustomCsrfViewMiddleware(CsrfViewMiddleware):
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def get_users(request):
-    # Убедитесь, что запрос сделан администратором
     if request.user.is_staff:
         users = CustomUser.objects.all().values("id", "username", "email")
         return Response(users)
@@ -413,7 +411,7 @@ class UserFilesView(APIView):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAdminUser])  # Администратор имеет доступ
+@permission_classes([IsAdminUser])  
 def delete_user_file(request, user_id, file_id):
     """
     Администратор может удалять файлы других пользователей.
@@ -421,7 +419,7 @@ def delete_user_file(request, user_id, file_id):
     :param file_id: ID файла, который нужно удалить.
     """
     try:
-        file = File.objects.get(id=file_id, user_id=user_id)  # Ищем файл по ID пользователя и ID файла
+        file = File.objects.get(id=file_id, user_id=user_id)  
         file.delete()
         return Response({"message": "Файл удалён."}, status=204)
     except File.DoesNotExist:
@@ -429,14 +427,13 @@ def delete_user_file(request, user_id, file_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])  # Только авторизованные пользователи могут удалить свои файлы
+@permission_classes([IsAuthenticated])  
 def delete_file(request, file_id):
     """
     Пользователь может удалить только свои файлы.
     :param file_id: ID файла, который нужно удалить.
     """
     try:
-        # Ищем файл, который принадлежит текущему пользователю
         file = File.objects.get(id=file_id, user=request.user)
         file.delete()
         return JsonResponse({'message': 'Файл удален.'})
