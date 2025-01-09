@@ -1,62 +1,62 @@
 /* Основной контейнер файлового менеджера */
-.file-manager {
+.file-storage-container {
+    text-align: center;
     padding: 20px;
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    max-width: 800px;
-    margin: 20px auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-image: url('/img/mycloud2.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    width: 100%;
 }
 
 /* Заголовки */
-.file-manager h1,
-.file-manager h2 {
+.file-storage h1,
+.file-storage h2 {
     text-align: center;
     color: #333;
     margin-bottom: 20px;
 }
 
 /* Таблица файлов */
-.file-manager table {
+.file-storage table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
 }
 
-.file-manager table th,
-.file-manager table td {
+.file-storage table th,
+.file-storage table td {
     padding: 12px;
     text-align: left;
     border: 1px solid #ddd;
 }
 
-.file-manager table th {
+.file-storage table th {
     background-color: #f4f4f4;
     color: #333;
 }
 
-.file-manager table tr:nth-child(even) {
+.file-storage table tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-.file-manager table tr:hover {
+.file-storage table tr:hover {
     background-color: #f1f1f1;
 }
 
 /* Действия */
-.file-manager a {
+.file-storage a {
     color: #0066cc;
     text-decoration: none;
     margin-right: 10px;
 }
 
-.file-manager a:hover {
+.file-storage a:hover {
     text-decoration: underline;
 }
 
-.file-manager button {
+.file-storage button {
     background-color: #007bff;
     color: white;
     border: none;
@@ -65,33 +65,33 @@
     cursor: pointer;
 }
 
-.file-manager button:hover {
+.file-storage button:hover {
     background-color: #0056b3;
 }
 
 /* Форма загрузки */
-.file-manager form {
+.file-storage form {
     display: flex;
     flex-direction: column;
     gap: 15px;
     margin-top: 20px;
 }
 
-.file-manager form input[type="file"] {
+.file-storage form input[type="file"] {
     padding: 5px;
     border: 1px solid #ddd;
     border-radius: 4px;
     background-color: #fff;
 }
 
-.file-manager form input[type="text"] {
+.file-storage form input[type="text"] {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
 }
 
-.file-manager form button {
+.file-storage form button {
     align-self: flex-start;
     background-color: #28a745;
     color: white;
@@ -101,18 +101,18 @@
     cursor: pointer;
 }
 
-.file-manager form button:hover {
+.file-storage form button:hover {
     background-color: #218838;
 }
 
 /* Сообщения */
-.file-manager .success-message {
+.file-storage .success-message {
     color: #28a745;
     font-weight: bold;
     margin-top: 10px;
 }
 
-.file-manager .error-message {
+.file-storage .error-message {
     color: #dc3545;
     font-weight: bold;
     margin-top: 10px;
