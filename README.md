@@ -4,7 +4,7 @@
 ## «MyCloud» - облачное хранилище. 
 
 
-## Инструкция по развёртыванию и запуску проекта. 
+## Инструкция по запуску проекта (локально). 
 
 
 ## Серверная часть приложения (бэкенд).
@@ -101,6 +101,172 @@ npm run dev
 
 
 
+## Инструкция по развёртыванию и запуску проекта. 
+
+## Бэкенд
+
+1. Зарегистрируйтесь или войдите в свой аккаунт на сайте REG.RU.
+2. Создаём сервер (Ubuntu), выбираем тариф. Запоминаем (копируем) плавающий IP. 
+3. В командной строке (терминал):
+   
+ssh root@...... (вводим IP)
+   
+5. Создаём нового пользователя и наделяет его правами. 
+
+adduser user_name (вместо user_name вводим имя нового пользователя)
+usermod user_name -aG sudo
+sudo -i -u user_name (переключаемся на пользователя)
+
+6. Обновляем установленные пакеты.
+
+sudo apt update -y && apt upgrade -y
+
+sudo apt-get install python3 python3-venv python3-pip postgresql nginx
+
+7. Создаём базу данных.
+
+sudo su postgres
+psql
+alter user postgres with password '.....' (вводим пароль);
+create database mydatabase;
+\q
+
+8. Склонируйте в корень папки вашего пользователя репозиторий с проектом,
+настройте виртуальное окружение Python и установите пакеты.
+
+git clone ........ (вводим адрес репозитория)
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+9. Делаем миграции.
+
+python manage.py migrate
+
+10. Собираем статику.
+
+python manage.py collectstatisc
+
+12. Устанавливаем и настраиваем gunicorn.
+
+pip install gunicorn
+
+Запускаем gunicorn, добавляем в автозагрузку и проверяем его работу:
+
+sudo systemctl start gunicorn
+sudo systemctl enable gunicorn
+sudo systemctl status gunicorn
+
+13. Установливаем nginx.
+
+apt install nginx
+sudo nano /etc/nginx/nginx.conf (меняем  ubuntu на имя вашего пользователя)
+
+    user ......;
+    worker_processes auto;
+    pid /run/nginx.pid;
+    error_log /var/log/nginx/error.log;
+    include /etc/nginx/modules-enabled/*.conf;
+    
+    events {
+            worker_connections 768;
+            # multi_accept on;
+    }
+    
+    http {
+            sendfile on;
+            tcp_nopush on;
+            types_hash_max_size 2048;
+           
+            include /etc/nginx/mime.types;
+            default_type application/octet-stream;
+    
+            ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3; # Dropping SSLv3, ref: POODLE
+            ssl_prefer_server_ciphers on;
+    
+            access_log /var/log/nginx/access.log;
+    
+            gzip on;
+            include /etc/nginx/conf.d/*.conf;
+            include /etc/nginx/sites-enabled/*;
+    }
+
+
+sudo nano /etc/nginx/sites-available/default (далем настройку nginx, указываем IP)
+
+    server {
+        listen 80;
+        server_name ........;
+
+        location /media/ {
+                root /home/anton/Mycloud/mycloud;
+        }
+
+        location /static/ {
+                root /home/anton/Mycloud/mycloud;
+        }
+
+
+
+        root /var/www/html;
+
+        index index.html index.htm index.nginx-debian.html;
+
+        server_name _;
+
+        location /api {
+                proxy_pass http://localhost:8000;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }
+
+        location / {
+                proxy_pass http://localhost:3000;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }
+
+    }
+
+
+Переопределяем конфигурации сервера nginx и проверяем его работоспособность:
+
+sudo systemctl reload nginx
+sudo systemctl status nginx
+
+14. Запускаем проект 'Mycloud'(находясь в директории /Mycloud/mycloud/).
+
+gunicorn mycloud.wsgi -b 0.0.0.0:8000 (меняем в файле setting.py - DEBUG=Fals)
+
+
+## Фронтенд
+
+1. В командной строке (терминал):
+   
+ssh root@...... (вводим IP)
+
+2. Переходим на пользователя.
+
+su ....... (имя пользователя)
+
+3. Устанавливаем зависимости и собираем проект. 
+
+npm install
+npm run build
+
+4. Запускаем приложение 'Mycloud'(находясь в директории /Mycloud/frontend/).
+
+npm run dev -- --host 0.0.0.0 
+
+
+
+
 ## Структура папок и файлов проекта. 
 
 ```
@@ -191,7 +357,7 @@ Mucloud/
         package.json - зависимости для фронтенда  
         README.md - описание проекта  
         vite.congig.jsx - конфигурационный файл для инструмента сборки Vite  
-    README.md - инструкция по развёртыванию проекта и описание папок и файлов  
+    README.md - инструкция по развёртыванию и запуску проекта, и описание папок и файлов  
 ```
 
         
