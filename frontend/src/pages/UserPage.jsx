@@ -3,6 +3,9 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './UserPage.css';
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+
+
 function UserPage() {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -57,7 +60,7 @@ function UserPage() {
     try {
       const response = await authorizedRequest({
         method: "GET",
-        url: "http://localhost:8000/api/files/",
+        url: `${API_URL}/files/`,
       });
       setFiles(response.data.files || []);
     } catch (error) {
@@ -89,7 +92,7 @@ function UserPage() {
 
       await authorizedRequest({
         method: "POST",
-        url: "http://localhost:8000/api/files/upload/",
+        url: `${API_URL}/files/upload/`,
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -111,7 +114,7 @@ function UserPage() {
       try {
         await authorizedRequest({
           method: "DELETE",
-          url: `http://localhost:8000/api/files/${fileId}/delete/`,
+          url: `${API_URL}/files/${fileId}/delete/`,
         });
         console.log("Файл успешно удалён.");
         fetchFiles();
@@ -136,7 +139,7 @@ function UserPage() {
     try {
       await authorizedRequest({
         method: "PATCH",
-        url: `http://localhost:8000/api/files/${fileId}/comment/`,
+        url: `${API_URL}/files/${fileId}/comment/`,
         data: { comment: newComment },
       });
       console.log("Комментарий обновлён.");
@@ -149,7 +152,7 @@ function UserPage() {
   };
 
   const handleViewFile = (fileUrl) => {
-    const fullUrl = `http://localhost:8000${fileUrl}`;
+    const fullUrl = `${API_URL.replace('/api', '')}${fileUrl}`;
     window.open(fullUrl, "_blank");
   };
 
@@ -159,7 +162,7 @@ function UserPage() {
       try {
         await authorizedRequest({
           method: "PUT",
-          url: `http://localhost:8000/api/files/${fileId}/rename/`,
+          url: `${API_URL}/files/${fileId}/rename/`,
           data: { name: newFileName },
         });
         console.log("Имя файла обновлено.");
@@ -173,7 +176,7 @@ function UserPage() {
 
   const handleDownloadFile = (fileUrl) => {
     const link = document.createElement("a");
-    link.href = `http://localhost:8000${fileUrl}`;
+    link.href = `${API_URL}${fileUrl}`;
     link.download = true;
     link.click();
   };
@@ -182,12 +185,12 @@ function UserPage() {
     try {
       const response = await authorizedRequest({
         method: "GET",
-        url: `http://localhost:8000/api/files/${fileId}/link/`,
+        url: `${API_URL}/files/${fileId}/link/`,
       });
       console.log("Server Response:", response.data);
       console.log("Generated file link:", response.data.link);
       if (response.data.link) {
-        const fullUrl = `http://localhost:8000${response.data.link}`;
+        const fullUrl = `${API_URL}${response.data.link}`;
         navigator.clipboard.writeText(fullUrl)
           .then(() => {
             console.log("Ссылка скопирована в буфер обмена!");
