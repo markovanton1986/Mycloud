@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { setAuthState } from "../store/authSlice";
 import "./Login.css";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 axios.defaults.withCredentials = true;
 
@@ -40,7 +41,7 @@ const Login = () => {
       const csrfToken = getCSRFToken();
 
       const response = await axios.post(
-        "http://localhost:8000/api/login/",
+        `${API_URL}/login/`,
         { username, password },
         {
           headers: {
