@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Admin.css";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ const Admin = () => {
     try {
       await authorizedRequest({
         method: "POST",
-        url: "http://localhost:8000/api/register/",
+        url: `${API_URL}/register/`,
         data: { username, password, email, fullname },
       });
       showNotification("Пользователь успешно зарегистрирован!");
@@ -81,7 +82,7 @@ const Admin = () => {
     try {
       const response = await authorizedRequest({
         method: "GET",
-        url: "http://localhost:8000/api/admin/users/",
+        url: `${API_URL}/admin/users/`,
       });
       setUsers(response.data || []);
     } catch (error) {
@@ -98,7 +99,7 @@ const Admin = () => {
     try {
       await authorizedRequest({
         method: "DELETE",
-        url: `http://localhost:8000/api/admin/users/${confirmDelete.userId}/delete/`,
+        url: `${API_URL}/admin/users/${confirmDelete.userId}/delete/`,
       });
       setUsers(users.filter((user) => user.id !== confirmDelete.userId));
       showNotification("Пользователь успешно удалён.");
@@ -114,7 +115,7 @@ const Admin = () => {
     try {
       await authorizedRequest({
         method: "PATCH",
-        url: `http://localhost:8000/api/admin/users/${userId}/update-status/`,
+        url: `${API_URL}/admin/users/${userId}/update-status/`,
         data: { is_staff: !isStaff },
       });
       setUsers(
