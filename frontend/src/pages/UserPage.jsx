@@ -176,7 +176,7 @@ function UserPage() {
 
   const handleDownloadFile = (fileUrl) => {
     const link = document.createElement("a");
-    link.href = `${API_URL}${fileUrl}`;
+    link.href = `${API_URL.replace('/api', '')}${fileUrl}`;
     link.download = true;
     link.click();
   };
@@ -189,18 +189,31 @@ function UserPage() {
       });
       console.log("Server Response:", response.data);
       console.log("Generated file link:", response.data.link);
+
       if (response.data.link) {
         const fullUrl = `${API_URL}${response.data.link}`;
-        navigator.clipboard.writeText(fullUrl)
-          .then(() => {
-            console.log("Ссылка скопирована в буфер обмена!");
-            setLinkCopied(true);
-            setTimeout(() => setLinkCopied(false), 3000);
-          })
-          .catch((error) => {
-            console.error("Ошибка при копировании ссылки:", error);
-            console.log("Не удалось скопировать ссылку.");
-          });
+
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(fullUrl)
+            .then(() => {
+              console.log("Ссылка скопирована в буфер обмена!");
+              setLinkCopied(true);
+              setTimeout(() => setLinkCopied(false), 3000);
+            })
+            .catch((error) => {
+              console.error("Ошибка при копировании ссылки:", error);
+            });
+        } else {
+          const textArea = document.createElement("textarea");
+          textArea.value = fullUrl;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+          console.log("Ссылка скопирована в буфер обмена!");
+          setLinkCopied(true);
+          setTimeout(() => setLinkCopied(false), 3000);
+        }
       } else {
         console.log("Ошибка: Не удалось получить ссылку.");
       }
