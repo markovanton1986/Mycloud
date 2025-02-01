@@ -245,7 +245,7 @@ gunicorn mycloud.wsgi -b 0.0.0.0:8000 (меняем в файле setting.py - D
 
 1. В файле .env:
 
-VITE_API_URL=http://89.104.66.22/api
+VITE_API_URL=http://............/api (вводим IP)
 
 2. В комагндной строке (терминал), надодясь в папке /frontend:
 
