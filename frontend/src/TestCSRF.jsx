@@ -20,7 +20,7 @@ const TestCSRF = () => {
             }
 
             const res = await axios.post(
-                "http://localhost:8000/api/test-csrf/",
+                "http://89.104.66.22/api/test-csrf/",
                 { data: "test" },
                 {
                     headers: {
