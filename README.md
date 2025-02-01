@@ -104,7 +104,9 @@ npm run dev
 
 
 
+
 ## Инструкция по развёртыванию и запуску проекта. 
+
 
 ## Бэкенд
 
@@ -201,40 +203,29 @@ sudo nano /etc/nginx/sites-available/default (далем настройку ngin
         listen 80;
         server_name ........;
 
+        root /var/www/html;
+        index index.html;
+
+        location / {
+            try_files $uri /index.html;
+
+        location /api {
+                proxy_pass http://127.0.0.1:8000;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }    
+        
+        
         location /media/ {
-                root /home/anton/Mycloud/mycloud;
+                alias /home/anton/Mycloud/mycloud/media/;
         }
 
         location /static/ {
-                root /home/anton/Mycloud/mycloud;
+                alias /var/www/static/;
         }
-
-
-
-        root /var/www/html;
-
-        index index.html index.htm index.nginx-debian.html;
-
-        server_name _;
-
-        location /api {
-                proxy_pass http://localhost:8000;
-                proxy_http_version 1.1;
-                proxy_set_header Upgrade $http_upgrade;
-                proxy_set_header Connection 'upgrade';
-                proxy_set_header Host $host;
-                proxy_cache_bypass $http_upgrade;
-        }
-
-        location / {
-                proxy_pass http://localhost:3000;
-                proxy_http_version 1.1;
-                proxy_set_header Upgrade $http_upgrade;
-                proxy_set_header Connection 'upgrade';
-                proxy_set_header Host $host;
-                proxy_cache_bypass $http_upgrade;
-        }
-
     }
 
 
@@ -248,24 +239,26 @@ sudo systemctl status nginx
 gunicorn mycloud.wsgi -b 0.0.0.0:8000 (меняем в файле setting.py - DEBUG=Fals)
 
 
+
+
 ## Фронтенд
 
-1. В командной строке (терминал):
-   
-ssh root@...... (вводим IP)
+1. В файле .env:
 
-2. Переходим на пользователя.
+VITE_API_URL=http://89.104.66.22/api
 
-su ....... (имя пользователя)
+2. В комагндной строке (терминал), надодясь в папке /frontend:
 
-3. Устанавливаем зависимости и собираем проект. 
+npm run build (осуществляем сборку)
 
-npm install
-npm run build
+3. Загружаем фронтенд на сервер:
 
-4. Запускаем приложение 'Mycloud'(находясь в директории /Mycloud/frontend/).
+scp -r dist/* root@......:/var/www/html/ (прописываем IP)
 
-npm run dev -- --host 0.0.0.0 
+4. Перезагружаем сервер
+
+
+sudo systemctl restart nginx
 
 
 
